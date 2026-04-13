@@ -2,6 +2,7 @@ import { useState } from "react";
 import { MatchWithPrediction } from "@/types";
 import { StatusBadge } from "./StatusBadge";
 import { ScoreBadge } from "./ScoreBadge";
+import { TeamFlag } from "./TeamFlag";
 import { MapPin, Calendar, Check } from "lucide-react";
 import { toast } from "sonner";
 
