@@ -99,11 +99,11 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
           <div className="flex items-center gap-1">
             <div className="flex items-center gap-0.5">
               <Arrows value={homeInput} onChange={setHomeInput} label={match.homeTeam.name} />
-              <NumBox value={homeInput} />
+              <NumBox value={homeInput} onChange={setHomeInput} />
             </div>
             <span className="text-muted-foreground text-xs font-medium mt-0.5">×</span>
             <div className="flex items-center gap-0.5">
-              <NumBox value={awayInput} />
+              <NumBox value={awayInput} onChange={setAwayInput} />
               <Arrows value={awayInput} onChange={setAwayInput} label={match.awayTeam.name} />
             </div>
           </div>
