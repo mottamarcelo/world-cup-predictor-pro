@@ -1,7 +1,7 @@
 import { LeagueParticipant } from "@/types";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
-import { Trophy, Target, Crosshair } from "lucide-react";
+import { Trophy, Target } from "lucide-react";
 
 interface RankingTableProps {
   participants: LeagueParticipant[];
