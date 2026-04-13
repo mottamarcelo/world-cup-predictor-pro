@@ -52,30 +52,31 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
     setSaved(false);
   };
 
-  const ScoreInput = ({ value, onChange, label }: { value: number | null; onChange: (v: number | null) => void; label: string }) => (
-    <div className="flex items-center gap-0.5">
-      <span className="w-8 h-8 flex items-center justify-center text-base font-bold tabular-nums rounded-md border border-input bg-background">
-        {value !== null ? value : "-"}
-      </span>
-      <div className="flex flex-col">
-        <button
-          type="button"
-          onClick={() => increment(value, onChange)}
-          className="w-5 h-4 flex items-center justify-center rounded-sm text-muted-foreground hover:bg-muted transition-colors"
-          aria-label={`Aumentar ${label}`}
-        >
-          <ChevronUp className="h-3 w-3" />
-        </button>
-        <button
-          type="button"
-          onClick={() => decrement(value, onChange)}
-          className="w-5 h-4 flex items-center justify-center rounded-sm text-muted-foreground hover:bg-muted transition-colors"
-          aria-label={`Diminuir ${label}`}
-        >
-          <ChevronDown className="h-3 w-3" />
-        </button>
-      </div>
+  const Arrows = ({ value, onChange, label }: { value: number | null; onChange: (v: number | null) => void; label: string }) => (
+    <div className="flex flex-col">
+      <button
+        type="button"
+        onClick={() => increment(value, onChange)}
+        className="w-5 h-4 flex items-center justify-center rounded-sm text-muted-foreground hover:bg-muted transition-colors"
+        aria-label={`Aumentar ${label}`}
+      >
+        <ChevronUp className="h-3 w-3" />
+      </button>
+      <button
+        type="button"
+        onClick={() => decrement(value, onChange)}
+        className="w-5 h-4 flex items-center justify-center rounded-sm text-muted-foreground hover:bg-muted transition-colors"
+        aria-label={`Diminuir ${label}`}
+      >
+        <ChevronDown className="h-3 w-3" />
+      </button>
     </div>
+  );
+
+  const NumBox = ({ value }: { value: number | null }) => (
+    <span className="w-8 h-8 flex items-center justify-center text-base font-bold tabular-nums rounded-md border border-input bg-background">
+      {value !== null ? value : "-"}
+    </span>
   );
 
   const renderCenterPrediction = () => {
