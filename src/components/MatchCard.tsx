@@ -53,25 +53,25 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
   };
 
   const ScoreInput = ({ value, onChange, label }: { value: number | null; onChange: (v: number | null) => void; label: string }) => (
-    <div className="flex flex-col items-center gap-0.5">
+    <div className="flex items-center gap-0.5">
       <button
         type="button"
-        onClick={() => increment(value, onChange)}
-        className="w-7 h-5 flex items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-        aria-label={`Aumentar ${label}`}
+        onClick={() => decrement(value, onChange)}
+        className="w-6 h-7 flex items-center justify-center rounded text-muted-foreground hover:bg-muted transition-colors"
+        aria-label={`Diminuir ${label}`}
       >
-        <Plus className="h-3 w-3" />
+        <Minus className="h-3 w-3" />
       </button>
-      <span className="w-9 h-8 flex items-center justify-center text-base font-bold tabular-nums rounded-md border border-input bg-background">
+      <span className="w-8 h-8 flex items-center justify-center text-base font-bold tabular-nums rounded-md border border-input bg-background">
         {value !== null ? value : "-"}
       </span>
       <button
         type="button"
-        onClick={() => decrement(value, onChange)}
-        className="w-7 h-5 flex items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
-        aria-label={`Diminuir ${label}`}
+        onClick={() => increment(value, onChange)}
+        className="w-6 h-7 flex items-center justify-center rounded text-muted-foreground hover:bg-muted transition-colors"
+        aria-label={`Aumentar ${label}`}
       >
-        <Minus className="h-3 w-3" />
+        <Plus className="h-3 w-3" />
       </button>
     </div>
   );
