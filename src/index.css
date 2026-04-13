@@ -98,7 +98,7 @@
     --warning-foreground: 220 25% 10%;
 
     --score-exact: 153 55% 40%;
-    --score-winner: 43 90% 50%;
+    --score-winner: 140 45% 50%;
     --score-none: 220 10% 40%;
 
     --sidebar-background: 240 5.9% 10%;
@@ -129,7 +129,8 @@
   }
 
   .score-badge-winner {
-    @apply bg-warning text-warning-foreground;
+    background: hsl(var(--score-winner) / 0.15);
+    color: hsl(var(--score-winner));
   }
 
   .score-badge-none {
