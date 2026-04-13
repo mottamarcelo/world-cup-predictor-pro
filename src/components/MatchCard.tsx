@@ -54,25 +54,27 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
 
   const ScoreInput = ({ value, onChange, label }: { value: number | null; onChange: (v: number | null) => void; label: string }) => (
     <div className="flex items-center gap-0.5">
-      <button
-        type="button"
-        onClick={() => decrement(value, onChange)}
-        className="w-6 h-7 flex items-center justify-center rounded text-muted-foreground hover:bg-muted transition-colors"
-        aria-label={`Diminuir ${label}`}
-      >
-        <Minus className="h-3 w-3" />
-      </button>
       <span className="w-8 h-8 flex items-center justify-center text-base font-bold tabular-nums rounded-md border border-input bg-background">
         {value !== null ? value : "-"}
       </span>
-      <button
-        type="button"
-        onClick={() => increment(value, onChange)}
-        className="w-6 h-7 flex items-center justify-center rounded text-muted-foreground hover:bg-muted transition-colors"
-        aria-label={`Aumentar ${label}`}
-      >
-        <Plus className="h-3 w-3" />
-      </button>
+      <div className="flex flex-col">
+        <button
+          type="button"
+          onClick={() => increment(value, onChange)}
+          className="w-5 h-4 flex items-center justify-center rounded-sm text-muted-foreground hover:bg-muted transition-colors"
+          aria-label={`Aumentar ${label}`}
+        >
+          <ChevronUp className="h-3 w-3" />
+        </button>
+        <button
+          type="button"
+          onClick={() => decrement(value, onChange)}
+          className="w-5 h-4 flex items-center justify-center rounded-sm text-muted-foreground hover:bg-muted transition-colors"
+          aria-label={`Diminuir ${label}`}
+        >
+          <ChevronDown className="h-3 w-3" />
+        </button>
+      </div>
     </div>
   );
 
