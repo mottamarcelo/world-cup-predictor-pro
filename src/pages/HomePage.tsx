@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback } from "react";
 import { AppLayout } from "@/components/AppLayout";
-import { MatchCard } from "@/components/MatchCard";
+import { MatchList } from "@/components/MatchList";
 import { UserSummary } from "@/components/UserSummary";
 import { getMatchesWithPredictions, getUserStats } from "@/data/mockData";
 import { Search } from "lucide-react";
@@ -76,24 +76,11 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Matches */}
-      {filteredMatches.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground">
-          <p className="text-lg font-medium">Nenhuma partida encontrada</p>
-          <p className="text-sm mt-1">Tente ajustar os filtros</p>
-        </div>
-      ) : (
-        <div className="flex flex-col gap-4 max-w-2xl mx-auto">
-          {filteredMatches.map((match) => (
-            <MatchCard
-              key={match.id}
-              match={match}
-              editable
-              onPredictionSave={handlePredictionSave}
-            />
-          ))}
-        </div>
-      )}
+      <MatchList
+        matches={filteredMatches}
+        editable
+        onPredictionSave={handlePredictionSave}
+      />
     </AppLayout>
   );
 }
