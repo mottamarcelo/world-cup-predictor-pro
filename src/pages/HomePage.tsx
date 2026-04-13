@@ -72,7 +72,7 @@ export default function HomePage() {
           <p className="text-sm mt-1">Tente ajustar os filtros</p>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col gap-4 max-w-2xl mx-auto">
           {filteredMatches.map((match) => (
             <MatchCard key={match.id} match={match} />
           ))}

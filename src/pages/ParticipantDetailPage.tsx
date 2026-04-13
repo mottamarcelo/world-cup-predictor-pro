@@ -50,7 +50,7 @@ export default function ParticipantDetailPage() {
 
       <div className="mt-6">
         <h2 className="text-base font-semibold mb-4">Palpites de {participant.name}</h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex flex-col gap-4 max-w-2xl mx-auto">
           {matches.map((match) => (
             <MatchCard key={match.id} match={match} />
           ))}
