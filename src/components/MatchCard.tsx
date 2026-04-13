@@ -50,6 +50,64 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
     setSaved(false);
   };
 
+  const isUpcoming = match.status === "upcoming";
+
+  // Prediction display for center column (upcoming editable or upcoming read-only)
+  const renderCenterPrediction = () => {
+    if (hidePrediction && isUpcoming) {
+      return <p className="text-[11px] text-muted-foreground italic text-center">Oculto</p>;
+    }
+
+    if (canEdit) {
+      return (
+        <div className="flex flex-col items-center gap-1.5">
+          <div className="flex items-center gap-1.5">
+            <input
+              type="text"
+              inputMode="numeric"
+              value={homeInput}
+              onChange={(e) => handleScoreInput(e.target.value, setHomeInput)}
+              placeholder="-"
+              className="w-10 h-9 text-center text-sm font-semibold rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring tabular-nums"
+              aria-label={`Palpite ${match.homeTeam.name}`}
+            />
+            <span className="text-muted-foreground text-sm">×</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={awayInput}
+              onChange={(e) => handleScoreInput(e.target.value, setAwayInput)}
+              placeholder="-"
+              className="w-10 h-9 text-center text-sm font-semibold rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring tabular-nums"
+              aria-label={`Palpite ${match.awayTeam.name}`}
+            />
+          </div>
+          <button
+            onClick={handleSave}
+            className={`inline-flex items-center gap-1 px-2.5 h-7 rounded-md text-xs font-medium transition-colors ${
+              saved
+                ? "bg-emerald-600 text-white"
+                : "bg-primary text-primary-foreground hover:bg-primary/90"
+            }`}
+          >
+            <Check className="h-3 w-3" />
+            {saved ? "Salvo" : "Salvar"}
+          </button>
+        </div>
+      );
+    }
+
+    // Upcoming, not editable (read-only view)
+    if (match.prediction) {
+      return (
+        <p className="text-sm font-semibold tabular-nums text-center">
+          {match.prediction.homeScore} × {match.prediction.awayScore}
+        </p>
+      );
+    }
+    return <p className="text-[11px] text-muted-foreground italic text-center">Sem palpite</p>;
+  };
+
   return (
     <div className="match-card animate-fade-in">
       {/* Top: Date, time, status */}
@@ -68,7 +126,7 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
         </div>
       )}
 
-      {/* Teams & Score */}
+      {/* Teams & Score/Prediction */}
       <div className="flex items-center justify-between gap-2 mb-3">
         {/* Home team */}
         <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -79,15 +137,44 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
           </div>
         </div>
 
-        {/* Score */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          <span className="text-xl font-bold tabular-nums w-7 text-center">
-            {match.homeScore !== null ? match.homeScore : "-"}
-          </span>
-          <span className="text-muted-foreground text-sm">×</span>
-          <span className="text-xl font-bold tabular-nums w-7 text-center">
-            {match.awayScore !== null ? match.awayScore : "-"}
-          </span>
+        {/* Center: score or prediction input depending on status */}
+        <div className="flex flex-col items-center shrink-0 gap-1">
+          {isUpcoming ? (
+            <>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide">Seu palpite</p>
+              {renderCenterPrediction()}
+            </>
+          ) : (
+            <>
+              {/* Official score */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-xl font-bold tabular-nums w-7 text-center">
+                  {match.homeScore ?? "-"}
+                </span>
+                <span className="text-muted-foreground text-sm">×</span>
+                <span className="text-xl font-bold tabular-nums w-7 text-center">
+                  {match.awayScore ?? "-"}
+                </span>
+              </div>
+              {/* Prediction below official score */}
+              <div className="flex flex-col items-center mt-1">
+                <p className="text-[10px] text-muted-foreground">{hidePrediction ? "Palpite" : "Seu palpite"}</p>
+                {hidePrediction ? (
+                  <p className="text-xs font-semibold tabular-nums">
+                    {match.prediction
+                      ? `${match.prediction.homeScore} × ${match.prediction.awayScore}`
+                      : "—"}
+                  </p>
+                ) : match.prediction ? (
+                  <p className="text-xs font-semibold tabular-nums">
+                    {match.prediction.homeScore} × {match.prediction.awayScore}
+                  </p>
+                ) : (
+                  <p className="text-[11px] text-muted-foreground italic">Sem palpite</p>
+                )}
+              </div>
+            </>
+          )}
         </div>
 
         {/* Away team */}
@@ -101,69 +188,17 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
       </div>
 
       {/* Venue */}
-      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-3">
+      <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mb-1">
         <MapPin className="h-3 w-3 shrink-0" />
         <span className="truncate">{match.venue}</span>
       </div>
 
-      {/* Divider + Prediction */}
-      <div className="border-t border-border pt-3">
-        {hidePrediction && match.status === "upcoming" ? (
-          <p className="text-sm text-muted-foreground italic">Palpite oculto até o jogo finalizar</p>
-        ) : canEdit ? (
-          <div>
-            <p className="text-[11px] text-muted-foreground mb-2">Seu palpite</p>
-            <div className="flex items-center gap-2">
-              <input
-                type="text"
-                inputMode="numeric"
-                value={homeInput}
-                onChange={(e) => handleScoreInput(e.target.value, setHomeInput)}
-                placeholder="-"
-                className="w-10 h-9 text-center text-sm font-semibold rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring tabular-nums"
-                aria-label={`Palpite ${match.homeTeam.name}`}
-              />
-              <span className="text-muted-foreground text-sm">×</span>
-              <input
-                type="text"
-                inputMode="numeric"
-                value={awayInput}
-                onChange={(e) => handleScoreInput(e.target.value, setAwayInput)}
-                placeholder="-"
-                className="w-10 h-9 text-center text-sm font-semibold rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring tabular-nums"
-                aria-label={`Palpite ${match.awayTeam.name}`}
-              />
-              <button
-                onClick={handleSave}
-                className={`ml-auto inline-flex items-center gap-1.5 px-3 h-9 rounded-md text-sm font-medium transition-colors ${
-                  saved
-                    ? "bg-emerald-600 text-white"
-                    : "bg-primary text-primary-foreground hover:bg-primary/90"
-                }`}
-              >
-                <Check className="h-3.5 w-3.5" />
-                {saved ? "Salvo" : "Salvar"}
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-[11px] text-muted-foreground mb-1">
-                {hidePrediction ? "Palpite" : "Seu palpite"}
-              </p>
-              {match.prediction ? (
-                <p className="text-sm font-semibold tabular-nums">
-                  {match.prediction.homeScore} × {match.prediction.awayScore}
-                </p>
-              ) : (
-                <p className="text-sm text-muted-foreground italic">Sem palpite</p>
-              )}
-            </div>
-            <ScoreBadge scoreType={match.scoreType} points={match.points} />
-          </div>
-        )}
-      </div>
+      {/* Score badge for finished matches */}
+      {match.status === "finished" && (
+        <div className="border-t border-border pt-2 mt-2 flex justify-end">
+          <ScoreBadge scoreType={match.scoreType} points={match.points} />
+        </div>
+      )}
     </div>
   );
 }
