@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { MatchCard } from "@/components/MatchCard";
@@ -52,7 +52,7 @@ export default function ParticipantDetailPage() {
         <h2 className="text-base font-semibold mb-4">Palpites de {participant.name}</h2>
         <div className="flex flex-col gap-4 max-w-2xl mx-auto">
           {matches.map((match) => (
-            <MatchCard key={match.id} match={match} />
+            <MatchCard key={match.id} match={match} hidePrediction />
           ))}
         </div>
       </div>

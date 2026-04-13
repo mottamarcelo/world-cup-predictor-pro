@@ -1,10 +1,11 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { MatchCard } from "@/components/MatchCard";
 import { UserSummary } from "@/components/UserSummary";
 import { getMatchesWithPredictions, getUserStats } from "@/data/mockData";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { MatchWithPrediction } from "@/types";
 
 type Filter = "all" | "upcoming" | "finished";
 
@@ -12,7 +13,17 @@ export default function HomePage() {
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
   const stats = getUserStats();
-  const allMatches = useMemo(() => getMatchesWithPredictions(), []);
+  const [allMatches, setAllMatches] = useState<MatchWithPrediction[]>(() => getMatchesWithPredictions());
+
+  const handlePredictionSave = useCallback((matchId: string, homeScore: number, awayScore: number) => {
+    setAllMatches((prev) =>
+      prev.map((m) =>
+        m.id === matchId
+          ? { ...m, prediction: { matchId, homeScore, awayScore } }
+          : m
+      )
+    );
+  }, []);
 
   const filteredMatches = useMemo(() => {
     let list = allMatches;
@@ -74,7 +85,12 @@ export default function HomePage() {
       ) : (
         <div className="flex flex-col gap-4 max-w-2xl mx-auto">
           {filteredMatches.map((match) => (
-            <MatchCard key={match.id} match={match} />
+            <MatchCard
+              key={match.id}
+              match={match}
+              editable
+              onPredictionSave={handlePredictionSave}
+            />
           ))}
         </div>
       )}
