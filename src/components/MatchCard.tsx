@@ -73,10 +73,19 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
     </div>
   );
 
-  const NumBox = ({ value }: { value: number | null }) => (
-    <span className="w-8 h-8 flex items-center justify-center text-base font-bold tabular-nums rounded-md border border-input bg-background">
-      {value !== null ? value : "-"}
-    </span>
+  const NumBox = ({ value, onChange }: { value: number | null; onChange: (v: number | null) => void }) => (
+    <input
+      type="text"
+      inputMode="numeric"
+      value={value !== null ? value : ""}
+      onChange={(e) => {
+        const cleaned = e.target.value.replace(/\D/g, "").slice(0, 2);
+        onChange(cleaned === "" ? null : parseInt(cleaned, 10));
+        setSaved(false);
+      }}
+      placeholder="-"
+      className="w-8 h-8 text-center text-base font-bold tabular-nums rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+    />
   );
 
   const renderCenterPrediction = () => {
@@ -90,11 +99,11 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
           <div className="flex items-center gap-1">
             <div className="flex items-center gap-0.5">
               <Arrows value={homeInput} onChange={setHomeInput} label={match.homeTeam.name} />
-              <NumBox value={homeInput} />
+              <NumBox value={homeInput} onChange={setHomeInput} />
             </div>
             <span className="text-muted-foreground text-xs font-medium mt-0.5">×</span>
             <div className="flex items-center gap-0.5">
-              <NumBox value={awayInput} />
+              <NumBox value={awayInput} onChange={setAwayInput} />
               <Arrows value={awayInput} onChange={setAwayInput} label={match.awayTeam.name} />
             </div>
           </div>
