@@ -88,9 +88,15 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
       return (
         <div className="flex flex-col items-center gap-1">
           <div className="flex items-center gap-1">
-            <ScoreInput value={homeInput} onChange={setHomeInput} label={match.homeTeam.name} />
+            <div className="flex items-center gap-0.5">
+              <Arrows value={homeInput} onChange={setHomeInput} label={match.homeTeam.name} />
+              <NumBox value={homeInput} />
+            </div>
             <span className="text-muted-foreground text-xs font-medium mt-0.5">×</span>
-            <ScoreInput value={awayInput} onChange={setAwayInput} label={match.awayTeam.name} />
+            <div className="flex items-center gap-0.5">
+              <NumBox value={awayInput} />
+              <Arrows value={awayInput} onChange={setAwayInput} label={match.awayTeam.name} />
+            </div>
           </div>
           <button
             onClick={handleSave}
