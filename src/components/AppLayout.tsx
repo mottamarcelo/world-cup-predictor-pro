@@ -108,9 +108,6 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
       </header>
 
-        </div>
-      </header>
-
       <UserProfileDialog
         open={profileOpen}
         onOpenChange={setProfileOpen}
