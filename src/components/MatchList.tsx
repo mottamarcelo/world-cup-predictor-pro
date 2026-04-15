@@ -33,6 +33,12 @@ export function MatchList({ matches, editable = false, hidePrediction = false, o
         month: "long",
         year: "numeric",
       });
+      // Sort within day by time, then by group
+      dateMatches.sort((a, b) => {
+        const timeCmp = a.time.localeCompare(b.time);
+        if (timeCmp !== 0) return timeCmp;
+        return (a.group ?? "").localeCompare(b.group ?? "");
+      });
       groups.push({ date, label, matches: dateMatches });
     }
 
@@ -59,7 +65,7 @@ export function MatchList({ matches, editable = false, hidePrediction = false, o
           </div>
 
           {/* 2-column grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className={`grid gap-4 ${group.matches.length === 1 ? "grid-cols-1 max-w-[50%]" : "grid-cols-1 md:grid-cols-2"}`}>
             {group.matches.map((match) => (
               <MatchCard
                 key={match.id}
