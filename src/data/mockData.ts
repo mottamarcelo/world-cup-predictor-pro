@@ -108,16 +108,18 @@ export const matches: Match[] = [
 ];
 
 const userPredictions: Record<string, Prediction> = {
-  m1: { matchId: "m1", homeScore: 2, awayScore: 0 },
-  m2: { matchId: "m2", homeScore: 2, awayScore: 0 },
-  m3: { matchId: "m3", homeScore: 3, awayScore: 1 },
+  m1: { matchId: "m1", homeScore: 2, awayScore: 1 },
+  m2: { matchId: "m2", homeScore: 3, awayScore: 0 },
+  m3: { matchId: "m3", homeScore: 3, awayScore: 0 },
   m4: { matchId: "m4", homeScore: 2, awayScore: 0 },
-  m5: { matchId: "m5", homeScore: 4, awayScore: 0 },
+  m5: { matchId: "m5", homeScore: 3, awayScore: 1 },
   m6: { matchId: "m6", homeScore: 2, awayScore: 1 },
-  m7: { matchId: "m7", homeScore: 1, awayScore: 0 },
-  m8: { matchId: "m8", homeScore: 2, awayScore: 1 },
-  m9: { matchId: "m9", homeScore: 1, awayScore: 0 },
-  m10: { matchId: "m10", homeScore: 3, awayScore: 0 },
+  m7: { matchId: "m7", homeScore: 4, awayScore: 0 },
+  m8: { matchId: "m8", homeScore: 2, awayScore: 0 },
+  m9: { matchId: "m9", homeScore: 2, awayScore: 1 },
+  m10: { matchId: "m10", homeScore: 1, awayScore: 0 },
+  m11: { matchId: "m11", homeScore: 2, awayScore: 0 },
+  m12: { matchId: "m12", homeScore: 2, awayScore: 1 },
 };
 
 function computeScoreType(match: Match, pred: Prediction | null): ScoreType {
