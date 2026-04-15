@@ -1,8 +1,16 @@
-import { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Trophy, LayoutGrid, Users, LogOut } from "lucide-react";
+import { Trophy, LayoutGrid, Users, LogOut, Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { currentUser } from "@/data/mockData";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { UserProfileDialog } from "./UserProfileDialog";
 
 interface AppLayoutProps {
   children: ReactNode;
@@ -15,6 +23,22 @@ const navItems = [
 
 export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [userName, setUserName] = useState(currentUser.name);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  const initials = userName
+    .split(" ")
+    .filter(Boolean)
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+
+  const handleProfileSave = (data: { name: string; avatarUrl?: string }) => {
+    setUserName(data.name);
+    if (data.avatarUrl) setAvatarUrl(data.avatarUrl);
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -49,15 +73,47 @@ export function AppLayout({ children }: AppLayoutProps) {
           </nav>
 
           <div className="flex items-center gap-3">
-            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-xs font-semibold text-primary-foreground">
-              {currentUser.avatarInitials}
-            </div>
-            <Link to="/auth" className="text-navy-foreground/50 hover:text-navy-foreground transition-colors">
-              <LogOut className="h-4 w-4" />
-            </Link>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button className="focus:outline-none rounded-full ring-offset-background focus-visible:ring-2 focus-visible:ring-ring">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" className="h-8 w-8 rounded-full object-cover" />
+                  ) : (
+                    <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-xs font-semibold text-primary-foreground">
+                      {initials}
+                    </div>
+                  )}
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <div className="px-2 py-1.5">
+                  <p className="text-sm font-medium">{userName}</p>
+                  <p className="text-xs text-muted-foreground">{currentUser.email}</p>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => setProfileOpen(true)}>
+                  <Settings className="h-4 w-4 mr-2" />
+                  Editar perfil
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/auth" className="flex items-center text-destructive">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sair
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
+
+      <UserProfileDialog
+        open={profileOpen}
+        onOpenChange={setProfileOpen}
+        user={{ name: userName, email: currentUser.email, avatarInitials: initials }}
+        onSave={handleProfileSave}
+      />
 
       {/* Mobile bottom nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border sm:hidden">
