@@ -108,14 +108,15 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
       </header>
 
+        </div>
+      </header>
+
       <UserProfileDialog
         open={profileOpen}
         onOpenChange={setProfileOpen}
         user={{ name: userName, email: currentUser.email, avatarInitials: initials }}
         onSave={handleProfileSave}
       />
-        </div>
-      </header>
 
       {/* Mobile bottom nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border sm:hidden">
