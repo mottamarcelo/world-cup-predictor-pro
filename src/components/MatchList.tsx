@@ -64,8 +64,8 @@ export function MatchList({ matches, editable = false, hidePrediction = false, o
             <h3 className="text-sm font-semibold capitalize text-foreground">{group.label}</h3>
           </div>
 
-          {/* 2-column grid */}
-          <div className={`grid gap-4 ${group.matches.length === 1 ? "grid-cols-1 max-w-[50%] mx-auto" : "grid-cols-1 md:grid-cols-2"}`}>
+          {/* Centered grid - max 2 columns */}
+          <div className="grid gap-4 grid-cols-1 md:grid-cols-2 max-w-3xl mx-auto">
             {group.matches.map((match) => (
               <MatchCard
                 key={match.id}
