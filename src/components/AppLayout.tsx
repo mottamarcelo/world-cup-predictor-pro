@@ -24,9 +24,15 @@ const navItems = [
 
 export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const [profileOpen, setProfileOpen] = useState(false);
   const [userName, setUserName] = useState(currentUser.name);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate("/auth", { replace: true });
+  };
 
   const initials = userName
     .split(" ")
