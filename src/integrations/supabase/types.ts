@@ -14,13 +14,203 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      league_members: {
+        Row: {
+          id: string
+          joined_at: string
+          league_id: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          joined_at?: string
+          league_id: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          joined_at?: string
+          league_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_members_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      leagues: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          invite_code: string
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          invite_code: string
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          invite_code?: string
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      matches: {
+        Row: {
+          away_code: string
+          away_score: number | null
+          away_team: string
+          created_at: string
+          group_name: string | null
+          home_code: string
+          home_score: number | null
+          home_team: string
+          id: string
+          match_date: string
+          stage: string
+          status: string
+          updated_at: string
+          venue: string | null
+        }
+        Insert: {
+          away_code: string
+          away_score?: number | null
+          away_team: string
+          created_at?: string
+          group_name?: string | null
+          home_code: string
+          home_score?: number | null
+          home_team: string
+          id?: string
+          match_date: string
+          stage?: string
+          status?: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Update: {
+          away_code?: string
+          away_score?: number | null
+          away_team?: string
+          created_at?: string
+          group_name?: string | null
+          home_code?: string
+          home_score?: number | null
+          home_team?: string
+          id?: string
+          match_date?: string
+          stage?: string
+          status?: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Relationships: []
+      }
+      predictions: {
+        Row: {
+          away_score: number
+          created_at: string
+          home_score: number
+          id: string
+          match_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          away_score: number
+          created_at?: string
+          home_score: number
+          id?: string
+          match_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          away_score?: number
+          created_at?: string
+          home_score?: number
+          id?: string
+          match_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "predictions_match_id_fkey"
+            columns: ["match_id"]
+            isOneToOne: false
+            referencedRelation: "matches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          id: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_points: {
+        Args: {
+          pred_away: number
+          pred_home: number
+          real_away: number
+          real_home: number
+        }
+        Returns: number
+      }
+      generate_invite_code: { Args: never; Returns: string }
+      is_league_member: {
+        Args: { _league_id: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       [_ in never]: never
