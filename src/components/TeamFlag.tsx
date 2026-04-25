@@ -12,7 +12,7 @@ const codeToIso2: Record<string, string> = {
   ISR: "il", JAM: "jm", HON: "hn", SLV: "sv", PAN: "pa", CUB: "cu",
   DOM: "do", HAI: "ht", TRI: "tt", IDN: "id", THA: "th", VNM: "vn",
   MYS: "my", PHI: "ph", SGP: "sg", IND: "in", PAK: "pk", BGD: "bd",
-  NZL: "nz",
+  NZL: "nz", CUW: "cw", CPV: "cv", UZB: "uz", JOR: "jo", AZE: "az",
 };
 
 interface TeamFlagProps {
