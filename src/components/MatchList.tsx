@@ -64,16 +64,17 @@ export function MatchList({ matches, editable = false, hidePrediction = false, o
             <h3 className="text-sm font-semibold capitalize text-foreground">{group.label}</h3>
           </div>
 
-          {/* Centered grid - max 2 columns */}
-          <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 max-w-5xl mx-auto">
+          {/* Centered flex layout - cards keep consistent size and stay centered */}
+          <div className="flex flex-wrap justify-center gap-4 max-w-5xl mx-auto">
             {group.matches.map((match) => (
-              <MatchCard
-                key={match.id}
-                match={match}
-                editable={editable}
-                hidePrediction={hidePrediction}
-                onPredictionSave={onPredictionSave}
-              />
+              <div key={match.id} className="w-full lg:w-[calc(50%-0.5rem)]">
+                <MatchCard
+                  match={match}
+                  editable={editable}
+                  hidePrediction={hidePrediction}
+                  onPredictionSave={onPredictionSave}
+                />
+              </div>
             ))}
           </div>
         </div>
