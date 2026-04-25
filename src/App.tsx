@@ -9,6 +9,7 @@ import LeaguesPage from "./pages/LeaguesPage";
 import LeagueDetailPage from "./pages/LeagueDetailPage";
 import ParticipantDetailPage from "./pages/ParticipantDetailPage";
 import NotFound from "./pages/NotFound";
+import { RequireAuth } from "./components/RequireAuth";
 
 const queryClient = new QueryClient();
 
