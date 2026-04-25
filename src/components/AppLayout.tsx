@@ -103,11 +103,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                   Editar perfil
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to="/auth" className="flex items-center text-destructive">
-                    <LogOut className="h-4 w-4 mr-2" />
-                    Sair
-                  </Link>
+                <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sair
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
