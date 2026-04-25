@@ -78,5 +78,6 @@ export function RankingTable({ participants, currentUserId, leagueId }: RankingT
         );
       })}
     </div>
+    </TooltipProvider>
   );
 }
