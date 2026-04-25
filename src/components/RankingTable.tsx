@@ -2,6 +2,7 @@ import { LeagueParticipant } from "@/types";
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { Trophy, Target } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface RankingTableProps {
   participants: LeagueParticipant[];
@@ -18,18 +19,34 @@ function MedalBadge({ position }: { position: number }) {
 
 export function RankingTable({ participants, currentUserId, leagueId }: RankingTableProps) {
   return (
+    <TooltipProvider delayDuration={150}>
     <div className="bg-card rounded-xl border border-border overflow-hidden">
       {/* Header */}
       <div className="grid grid-cols-[2.5rem_1fr_4.5rem_3.5rem_3.5rem] md:grid-cols-[3rem_1fr_5rem_4.5rem_4.5rem] gap-2 px-4 py-3 text-xs text-muted-foreground font-medium border-b border-border bg-muted/50">
         <span>#</span>
         <span>Participante</span>
-        <span className="text-center">Pts</span>
-        <span className="text-center hidden sm:block">
-          <Trophy className="h-3 w-3 mx-auto" />
-        </span>
-        <span className="text-center hidden sm:block">
-          <Target className="h-3 w-3 mx-auto" />
-        </span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="text-center cursor-help">Pts</span>
+          </TooltipTrigger>
+          <TooltipContent>Pontuação total acumulada</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="text-center hidden sm:block cursor-help">
+              <Trophy className="h-3 w-3 mx-auto" />
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>Placares exatos (10 pts cada)</TooltipContent>
+        </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="text-center hidden sm:block cursor-help">
+              <Target className="h-3 w-3 mx-auto" />
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>Vencedor correto (5 pts cada)</TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Rows */}
@@ -61,5 +78,6 @@ export function RankingTable({ participants, currentUserId, leagueId }: RankingT
         );
       })}
     </div>
+    </TooltipProvider>
   );
 }
