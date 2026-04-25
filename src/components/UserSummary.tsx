@@ -37,7 +37,7 @@ export function UserSummary({ totalPoints, exactHits, winnerHits, position, leag
         <div className="stat-card">
           <div className="flex items-center gap-2 text-muted-foreground mb-1">
             <Crosshair className="h-4 w-4 text-warning" />
-            <span className="text-xs font-medium">Vencedores</span>
+            <span className="text-xs font-medium">Acertos</span>
           </div>
           <p className="text-2xl font-bold tabular-nums">{winnerHits}</p>
           <p className="text-[11px] text-muted-foreground">acertos</p>
