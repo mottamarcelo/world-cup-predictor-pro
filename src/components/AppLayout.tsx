@@ -1,8 +1,9 @@
 import { ReactNode, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Trophy, LayoutGrid, Users, LogOut, Settings, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { currentUser } from "@/data/mockData";
+import { supabase } from "@/integrations/supabase/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
