@@ -9,6 +9,7 @@ import LeaguesPage from "./pages/LeaguesPage";
 import LeagueDetailPage from "./pages/LeagueDetailPage";
 import ParticipantDetailPage from "./pages/ParticipantDetailPage";
 import NotFound from "./pages/NotFound";
+import { RequireAuth } from "./components/RequireAuth";
 
 const queryClient = new QueryClient();
 
@@ -19,11 +20,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<RequireAuth><HomePage /></RequireAuth>} />
           <Route path="/auth" element={<AuthPage />} />
-          <Route path="/leagues" element={<LeaguesPage />} />
-          <Route path="/leagues/:leagueId" element={<LeagueDetailPage />} />
-          <Route path="/leagues/:leagueId/participant/:participantId" element={<ParticipantDetailPage />} />
+          <Route path="/leagues" element={<RequireAuth><LeaguesPage /></RequireAuth>} />
+          <Route path="/leagues/:leagueId" element={<RequireAuth><LeagueDetailPage /></RequireAuth>} />
+          <Route path="/leagues/:leagueId/participant/:participantId" element={<RequireAuth><ParticipantDetailPage /></RequireAuth>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
