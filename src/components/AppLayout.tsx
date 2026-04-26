@@ -1,9 +1,9 @@
 import { ReactNode, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Trophy, LayoutGrid, Users, LogOut, Settings, User } from "lucide-react";
+import { Trophy, LayoutGrid, Users, LogOut, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { currentUser } from "@/data/mockData";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,14 +25,13 @@ const navItems = [
 export function AppLayout({ children }: AppLayoutProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const { data: profile } = useProfile();
   const [profileOpen, setProfileOpen] = useState(false);
-  const [userName, setUserName] = useState(currentUser.name);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate("/auth", { replace: true });
-  };
+  const userName = profile?.name || user?.email?.split("@")[0] || "Jogador";
+  const email = profile?.email || user?.email || "";
+  const avatarUrl = profile?.avatar_url ?? null;
 
   const initials = userName
     .split(" ")
@@ -42,14 +41,13 @@ export function AppLayout({ children }: AppLayoutProps) {
     .join("")
     .toUpperCase();
 
-  const handleProfileSave = (data: { name: string; avatarUrl?: string }) => {
-    setUserName(data.name);
-    if (data.avatarUrl) setAvatarUrl(data.avatarUrl);
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/auth", { replace: true });
   };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="sticky top-0 z-50 bg-navy text-navy-foreground border-b border-border/10">
         <div className="container flex items-center justify-between h-14">
           <Link to="/" className="flex items-center gap-2">
@@ -57,12 +55,10 @@ export function AppLayout({ children }: AppLayoutProps) {
             <span className="font-bold text-sm">Bolão Copa 2026</span>
           </Link>
 
-          {/* Desktop nav */}
           <nav className="hidden sm:flex items-center gap-1">
             {navItems.map((item) => {
-              const isActive = item.path === "/"
-                ? location.pathname === "/"
-                : location.pathname.startsWith(item.path);
+              const isActive =
+                item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path);
               return (
                 <Link
                   key={item.path}
@@ -94,8 +90,8 @@ export function AppLayout({ children }: AppLayoutProps) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <div className="px-2 py-1.5">
-                  <p className="text-sm font-medium">{userName}</p>
-                  <p className="text-xs text-muted-foreground">{currentUser.email}</p>
+                  <p className="text-sm font-medium truncate">{userName}</p>
+                  <p className="text-xs text-muted-foreground truncate">{email}</p>
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => setProfileOpen(true)}>
@@ -113,20 +109,13 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
       </header>
 
-      <UserProfileDialog
-        open={profileOpen}
-        onOpenChange={setProfileOpen}
-        user={{ name: userName, email: currentUser.email, avatarInitials: initials }}
-        onSave={handleProfileSave}
-      />
+      <UserProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
 
-      {/* Mobile bottom nav */}
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border sm:hidden">
         <div className="flex items-center justify-around h-14">
           {navItems.map((item) => {
-            const isActive = item.path === "/"
-              ? location.pathname === "/"
-              : location.pathname.startsWith(item.path);
+            const isActive =
+              item.path === "/" ? location.pathname === "/" : location.pathname.startsWith(item.path);
             return (
               <Link
                 key={item.path}
@@ -144,10 +133,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
       </nav>
 
-      {/* Main content */}
-      <main className="container py-6 pb-20 sm:pb-6">
-        {children}
-      </main>
+      <main className="container py-6 pb-20 sm:pb-6">{children}</main>
     </div>
   );
 }
