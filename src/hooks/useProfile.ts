@@ -36,8 +36,14 @@ export function useUpdateProfile() {
       if (!user) throw new Error("Não autenticado");
       const { error } = await supabase
         .from("profiles")
-        .update(patch)
-        .eq("user_id", user.id);
+        .upsert(
+          {
+            user_id: user.id,
+            email: user.email ?? "",
+            ...patch,
+          },
+          { onConflict: "user_id" }
+        );
       if (error) throw error;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["profile"] }),
