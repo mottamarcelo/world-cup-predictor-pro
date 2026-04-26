@@ -1,29 +1,33 @@
-import { useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { AppLayout } from "@/components/AppLayout";
 import { MatchList } from "@/components/MatchList";
 import { UserSummary } from "@/components/UserSummary";
-import { getParticipantPredictions, leagues } from "@/data/mockData";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
+import { useLeagueDetail } from "@/hooks/useLeagues";
+import { useUserPredictions } from "@/hooks/useMatches";
 
 export default function ParticipantDetailPage() {
   const { leagueId, participantId } = useParams();
-  const league = leagues.find((l) => l.id === leagueId);
-  const participant = league?.participants.find((p) => p.userId === participantId);
+  const { data: leagueData, isLoading: lLoading } = useLeagueDetail(leagueId);
+  const { data: matches = [], isLoading: mLoading } = useUserPredictions(participantId);
 
-  const matches = useMemo(
-    () => (participantId ? getParticipantPredictions(participantId) : []),
-    [participantId]
-  );
+  if (lLoading || mLoading) {
+    return (
+      <AppLayout>
+        <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
+      </AppLayout>
+    );
+  }
+
+  const league = leagueData?.league;
+  const participant = leagueData?.participants.find((p) => p.userId === participantId);
 
   if (!league || !participant) {
     return (
       <AppLayout>
         <div className="text-center py-16 text-muted-foreground">
           <p className="text-lg font-medium">Participante não encontrado</p>
-          <Link to="/leagues" className="text-primary text-sm hover:underline mt-2 inline-block">
-            Voltar para ligas
-          </Link>
+          <Link to="/leagues" className="text-primary text-sm hover:underline mt-2 inline-block">Voltar para ligas</Link>
         </div>
       </AppLayout>
     );

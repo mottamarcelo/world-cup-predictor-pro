@@ -1,75 +1,95 @@
-import { useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Camera, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { useProfile, useUpdateProfile } from "@/hooks/useProfile";
+import { supabase } from "@/integrations/supabase/client";
 
-interface UserProfileDialogProps {
+interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user: { name: string; email: string; avatarInitials: string };
-  onSave: (data: { name: string; avatarUrl?: string }) => void;
 }
 
-export function UserProfileDialog({ open, onOpenChange, user, onSave }: UserProfileDialogProps) {
-  const [name, setName] = useState(user.name);
+export function UserProfileDialog({ open, onOpenChange }: Props) {
+  const { user } = useAuth();
+  const { data: profile } = useProfile();
+  const updateProfile = useUpdateProfile();
+
+  const [name, setName] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showCurrentPw, setShowCurrentPw] = useState(false);
   const [showNewPw, setShowNewPw] = useState(false);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [saving, setSaving] = useState(false);
 
-  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 2 * 1024 * 1024) {
-      toast.error("A imagem deve ter no máximo 2MB");
-      return;
-    }
-    const url = URL.createObjectURL(file);
-    setAvatarPreview(url);
-  };
+  useEffect(() => {
+    if (open && profile) setName(profile.name);
+  }, [open, profile]);
 
-  const handleSave = () => {
+  const initials =
+    name
+      .split(" ")
+      .filter(Boolean)
+      .map((w) => w[0])
+      .slice(0, 2)
+      .join("")
+      .toUpperCase() || "?";
+
+  const handleSave = async () => {
     if (!name.trim()) {
       toast.error("O nome não pode estar vazio");
       return;
     }
+    setSaving(true);
+    try {
+      if (profile && name.trim() !== profile.name) {
+        await updateProfile.mutateAsync({ name: name.trim() });
+      }
 
-    if (newPassword || confirmPassword || currentPassword) {
-      if (!currentPassword) {
-        toast.error("Informe a senha atual");
-        return;
+      if (newPassword || confirmPassword || currentPassword) {
+        if (!currentPassword) {
+          toast.error("Informe a senha atual");
+          return;
+        }
+        if (newPassword.length < 6) {
+          toast.error("A nova senha deve ter pelo menos 6 caracteres");
+          return;
+        }
+        if (newPassword !== confirmPassword) {
+          toast.error("As senhas não coincidem");
+          return;
+        }
+        const { error: signInErr } = await supabase.auth.signInWithPassword({
+          email: user?.email ?? "",
+          password: currentPassword,
+        });
+        if (signInErr) {
+          toast.error("Senha atual incorreta");
+          return;
+        }
+        const { error: pwErr } = await supabase.auth.updateUser({ password: newPassword });
+        if (pwErr) {
+          toast.error("Erro ao atualizar senha", { description: pwErr.message });
+          return;
+        }
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
       }
-      if (newPassword.length < 6) {
-        toast.error("A nova senha deve ter pelo menos 6 caracteres");
-        return;
-      }
-      if (newPassword !== confirmPassword) {
-        toast.error("As senhas não coincidem");
-        return;
-      }
+
+      toast.success("Perfil atualizado!");
+      onOpenChange(false);
+    } catch (e) {
+      toast.error("Erro ao salvar", { description: (e as Error).message });
+    } finally {
+      setSaving(false);
     }
-
-    onSave({ name: name.trim(), avatarUrl: avatarPreview ?? undefined });
-    toast.success("Perfil atualizado com sucesso!");
-    setCurrentPassword("");
-    setNewPassword("");
-    setConfirmPassword("");
-    onOpenChange(false);
   };
-
-  const initials = name
-    .split(" ")
-    .filter(Boolean)
-    .map((w) => w[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -79,39 +99,12 @@ export function UserProfileDialog({ open, onOpenChange, user, onSave }: UserProf
         </DialogHeader>
 
         <div className="space-y-5 pt-2">
-          {/* Avatar */}
           <div className="flex flex-col items-center gap-2">
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              className="relative group"
-            >
-              {avatarPreview ? (
-                <img
-                  src={avatarPreview}
-                  alt="Avatar"
-                  className="h-20 w-20 rounded-full object-cover border-2 border-border"
-                />
-              ) : (
-                <div className="h-20 w-20 rounded-full bg-primary flex items-center justify-center text-xl font-bold text-primary-foreground">
-                  {initials}
-                </div>
-              )}
-              <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <Camera className="h-5 w-5 text-white" />
-              </div>
-            </button>
-            <p className="text-xs text-muted-foreground">Clique para alterar a foto</p>
-            <input
-              ref={fileRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handlePhotoChange}
-            />
+            <div className="h-20 w-20 rounded-full bg-primary flex items-center justify-center text-xl font-bold text-primary-foreground">
+              {initials}
+            </div>
           </div>
 
-          {/* Name */}
           <div className="space-y-1.5">
             <Label htmlFor="profile-name">Nome</Label>
             <Input
@@ -122,15 +115,13 @@ export function UserProfileDialog({ open, onOpenChange, user, onSave }: UserProf
             />
           </div>
 
-          {/* Email (read-only) */}
           <div className="space-y-1.5">
             <Label>E-mail</Label>
-            <Input value={user.email} disabled className="opacity-60" />
+            <Input value={profile?.email ?? user?.email ?? ""} disabled className="opacity-60" />
           </div>
 
-          {/* Password change */}
           <div className="space-y-3 border-t border-border pt-4">
-            <p className="text-sm font-medium">Alterar Senha</p>
+            <p className="text-sm font-medium">Alterar Senha (opcional)</p>
 
             <div className="space-y-1.5">
               <Label htmlFor="current-pw">Senha atual</Label>
@@ -141,6 +132,7 @@ export function UserProfileDialog({ open, onOpenChange, user, onSave }: UserProf
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="••••••"
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
@@ -161,6 +153,7 @@ export function UserProfileDialog({ open, onOpenChange, user, onSave }: UserProf
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Mínimo 6 caracteres"
+                  autoComplete="new-password"
                 />
                 <button
                   type="button"
@@ -180,11 +173,13 @@ export function UserProfileDialog({ open, onOpenChange, user, onSave }: UserProf
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Repita a nova senha"
+                autoComplete="new-password"
               />
             </div>
           </div>
 
-          <Button onClick={handleSave} className="w-full">
+          <Button onClick={handleSave} className="w-full" disabled={saving}>
+            {saving && <Loader2 className="h-4 w-4 animate-spin" />}
             Salvar alterações
           </Button>
         </div>

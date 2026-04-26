@@ -1,29 +1,45 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
 import { MatchList } from "@/components/MatchList";
 import { UserSummary } from "@/components/UserSummary";
-import { getMatchesWithPredictions, getUserStats } from "@/data/mockData";
-import { Search } from "lucide-react";
+import { Search, Loader2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { MatchWithPrediction } from "@/types";
+import { useMatchesWithPredictions, useSavePrediction } from "@/hooks/useMatches";
+import { useMyLeagues } from "@/hooks/useLeagues";
+import { toast } from "sonner";
 
 type Filter = "all" | "upcoming" | "finished";
 
 export default function HomePage() {
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
-  const stats = getUserStats();
-  const [allMatches, setAllMatches] = useState<MatchWithPrediction[]>(() => getMatchesWithPredictions());
 
-  const handlePredictionSave = useCallback((matchId: string, homeScore: number, awayScore: number) => {
-    setAllMatches((prev) =>
-      prev.map((m) =>
-        m.id === matchId
-          ? { ...m, prediction: { matchId, homeScore, awayScore } }
-          : m
-      )
-    );
-  }, []);
+  const { data: allMatches = [], isLoading } = useMatchesWithPredictions();
+  const { data: leagues = [] } = useMyLeagues();
+  const savePrediction = useSavePrediction();
+
+  const stats = useMemo(() => {
+    const finished = allMatches.filter((m) => m.status === "finished");
+    const totalPoints = finished.reduce((s, m) => s + m.points, 0);
+    const exactHits = finished.filter((m) => m.scoreType === "exact").length;
+    const winnerHits = finished.filter((m) => m.scoreType === "winner").length;
+    const topLeague = leagues[0];
+    return {
+      totalPoints,
+      exactHits,
+      winnerHits,
+      position: topLeague?.userPosition ?? 0,
+      leagueName: topLeague?.name ?? "Nenhuma liga",
+    };
+  }, [allMatches, leagues]);
+
+  const handlePredictionSave = async (matchId: string, homeScore: number, awayScore: number) => {
+    try {
+      await savePrediction.mutateAsync({ matchId, homeScore, awayScore });
+    } catch (e) {
+      toast.error("Erro ao salvar palpite", { description: (e as Error).message });
+    }
+  };
 
   const filteredMatches = useMemo(() => {
     let list = allMatches;
@@ -52,7 +68,6 @@ export default function HomePage() {
     <AppLayout>
       <UserSummary {...stats} />
 
-      {/* Filters */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-6 mb-4">
         <div className="flex gap-1">
           {filters.map((f) => (
@@ -76,11 +91,13 @@ export default function HomePage() {
         </div>
       </div>
 
-      <MatchList
-        matches={filteredMatches}
-        editable
-        onPredictionSave={handlePredictionSave}
-      />
+      {isLoading ? (
+        <div className="flex justify-center py-16">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <MatchList matches={filteredMatches} editable onPredictionSave={handlePredictionSave} />
+      )}
     </AppLayout>
   );
 }
