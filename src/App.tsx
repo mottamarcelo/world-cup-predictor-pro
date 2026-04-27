@@ -9,6 +9,7 @@ import HomePage from "./pages/HomePage";
 import LeaguesPage from "./pages/LeaguesPage";
 import LeagueDetailPage from "./pages/LeagueDetailPage";
 import ParticipantDetailPage from "./pages/ParticipantDetailPage";
+import AdminPage from "./pages/AdminPage";
 import NotFound from "./pages/NotFound";
 import { RequireAuth } from "./components/RequireAuth";
 
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/leagues" element={<RequireAuth><LeaguesPage /></RequireAuth>} />
             <Route path="/leagues/:leagueId" element={<RequireAuth><LeagueDetailPage /></RequireAuth>} />
             <Route path="/leagues/:leagueId/participant/:participantId" element={<RequireAuth><ParticipantDetailPage /></RequireAuth>} />
+            <Route path="/admin" element={<RequireAuth><AdminPage /></RequireAuth>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
