@@ -1,9 +1,10 @@
 import { ReactNode, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Trophy, LayoutGrid, Users, LogOut, Settings } from "lucide-react";
+import { Trophy, LayoutGrid, Users, LogOut, Settings, ShieldCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { useIsAdmin } from "@/hooks/useUserRole";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +28,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
   const { data: profile } = useProfile();
+  const { data: isAdmin } = useIsAdmin();
   const [profileOpen, setProfileOpen] = useState(false);
 
   const userName = profile?.name || user?.email?.split("@")[0] || "Jogador";
@@ -98,6 +100,12 @@ export function AppLayout({ children }: AppLayoutProps) {
                   <Settings className="h-4 w-4 mr-2" />
                   Editar perfil
                 </DropdownMenuItem>
+                {isAdmin && (
+                  <DropdownMenuItem onClick={() => navigate("/admin")}>
+                    <ShieldCheck className="h-4 w-4 mr-2" />
+                    Admin · Placares
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
                   <LogOut className="h-4 w-4 mr-2" />
