@@ -45,6 +45,7 @@ export function dbMatchToMatch(m: DbMatch): Match {
     awayTeam: { code: m.away_code, name: m.away_team, flag: emoji(m.away_code) },
     date: isoDate,
     time,
+    kickoffAt: m.match_date,
     venue: m.venue ?? "",
     status: statusFromDb(m.status),
     homeScore: m.home_score,
