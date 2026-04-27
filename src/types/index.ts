@@ -10,8 +10,9 @@ export interface Match {
   id: string;
   homeTeam: Team;
   awayTeam: Team;
-  date: string; // ISO
-  time: string; // HH:mm
+  date: string; // ISO YYYY-MM-DD (BRT)
+  time: string; // HH:mm (BRT)
+  kickoffAt: string; // ISO timestamp (UTC) — source of truth for "started"
   venue: string;
   status: MatchStatus;
   homeScore: number | null;
