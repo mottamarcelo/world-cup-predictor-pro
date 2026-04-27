@@ -65,7 +65,12 @@ export function useSavePrediction() {
         },
         { onConflict: "user_id,match_id" }
       );
-      if (error) throw error;
+      if (error) {
+        if (error.code === "42501" || /row-level security/i.test(error.message)) {
+          throw new Error("Palpites já encerrados para esta partida");
+        }
+        throw error;
+      }
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["matchesWithPredictions"] }),
   });

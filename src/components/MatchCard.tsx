@@ -14,7 +14,8 @@ interface MatchCardProps {
 }
 
 export function MatchCard({ match, editable = false, hidePrediction = false, onPredictionSave }: MatchCardProps) {
-  const canEdit = editable && match.status === "upcoming";
+  const matchStarted = new Date(match.kickoffAt).getTime() <= Date.now();
+  const canEdit = editable && match.status === "upcoming" && !matchStarted;
 
   const [homeInput, setHomeInput] = useState<number | null>(
     match.prediction?.homeScore !== null && match.prediction?.homeScore !== undefined
@@ -132,6 +133,8 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
     return <p className="text-[11px] text-muted-foreground italic text-center">Sem palpite</p>;
   };
 
+  const showLockedHint = isUpcoming && matchStarted;
+
   return (
     <div className="match-card animate-fade-in">
       {/* Top: time, group, status */}
@@ -165,7 +168,9 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
         <div className="flex flex-col items-center shrink-0 gap-0.5">
           {isUpcoming ? (
             <>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Seu palpite</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">
+                {showLockedHint ? "Palpite encerrado" : "Seu palpite"}
+              </p>
               {renderCenterPrediction()}
             </>
           ) : (
