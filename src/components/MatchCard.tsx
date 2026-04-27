@@ -133,6 +133,8 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
     return <p className="text-[11px] text-muted-foreground italic text-center">Sem palpite</p>;
   };
 
+  const showLockedHint = isUpcoming && matchStarted;
+
   return (
     <div className="match-card animate-fade-in">
       {/* Top: time, group, status */}
