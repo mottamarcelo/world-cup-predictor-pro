@@ -168,7 +168,9 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
         <div className="flex flex-col items-center shrink-0 gap-0.5">
           {isUpcoming ? (
             <>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">Seu palpite</p>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-0.5">
+                {showLockedHint ? "Palpite encerrado" : "Seu palpite"}
+              </p>
               {renderCenterPrediction()}
             </>
           ) : (
