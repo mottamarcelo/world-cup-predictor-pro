@@ -14,7 +14,8 @@ interface MatchCardProps {
 }
 
 export function MatchCard({ match, editable = false, hidePrediction = false, onPredictionSave }: MatchCardProps) {
-  const canEdit = editable && match.status === "upcoming";
+  const matchStarted = new Date(match.kickoffAt).getTime() <= Date.now();
+  const canEdit = editable && match.status === "upcoming" && !matchStarted;
 
   const [homeInput, setHomeInput] = useState<number | null>(
     match.prediction?.homeScore !== null && match.prediction?.homeScore !== undefined
