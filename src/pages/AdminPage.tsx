@@ -1,10 +1,38 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Save, ShieldAlert } from "lucide-react";
+import { Loader2, Plus, Save, ShieldAlert, Trash2 } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useIsAdmin } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
@@ -16,6 +44,36 @@ interface RowState {
   away: string;
   finished: boolean;
 }
+
+const STAGE_OPTIONS: { value: string; label: string }[] = [
+  { value: "group", label: "Fase de Grupos" },
+  { value: "round_of_32", label: "16-avos de Final" },
+  { value: "round_of_16", label: "Oitavas de Final" },
+  { value: "quarter_finals", label: "Quartas de Final" },
+  { value: "semi_finals", label: "Semifinal" },
+  { value: "third_place", label: "Disputa de 3º Lugar" },
+  { value: "final", label: "Final" },
+];
+
+const GROUP_OPTIONS = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L"];
+
+interface NewMatchForm {
+  match_date: string; // datetime-local
+  home_team: string;
+  away_team: string;
+  group_name: string;
+  stage: string;
+  venue: string;
+}
+
+const emptyForm: NewMatchForm = {
+  match_date: "",
+  home_team: "",
+  away_team: "",
+  group_name: "",
+  stage: "group",
+  venue: "",
+};
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -36,6 +94,8 @@ export default function AdminPage() {
   });
 
   const [rows, setRows] = useState<Record<string, RowState>>({});
+  const [createOpen, setCreateOpen] = useState(false);
+  const [form, setForm] = useState<NewMatchForm>(emptyForm);
 
   useEffect(() => {
     if (!matches) return;
@@ -67,14 +127,62 @@ export default function AdminPage() {
       qc.invalidateQueries({ queryKey: ["matchesWithPredictions"] });
       toast({ title: "Placar salvo" });
     },
-    onError: (e: any) => toast({ title: "Erro ao salvar", description: e.message, variant: "destructive" }),
+    onError: (e: Error) =>
+      toast({ title: "Erro ao salvar", description: e.message, variant: "destructive" }),
+  });
+
+  const createMutation = useMutation({
+    mutationFn: async (data: NewMatchForm) => {
+      if (!data.match_date || !data.home_team.trim() || !data.away_team.trim()) {
+        throw new Error("Preencha data, time mandante e time visitante.");
+      }
+      const isoDate = new Date(data.match_date).toISOString();
+      const payload = {
+        match_date: isoDate,
+        home_team: data.home_team.trim(),
+        away_team: data.away_team.trim(),
+        home_code: data.home_team.trim(),
+        away_code: data.away_team.trim(),
+        group_name: data.stage === "group" ? (data.group_name || null) : null,
+        stage: data.stage,
+        venue: data.venue.trim() || null,
+        status: "scheduled",
+      };
+      const { error } = await supabase.from("matches").insert(payload);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["adminMatches"] });
+      qc.invalidateQueries({ queryKey: ["matchesWithPredictions"] });
+      toast({ title: "Partida adicionada" });
+      setCreateOpen(false);
+      setForm(emptyForm);
+    },
+    onError: (e: Error) =>
+      toast({ title: "Erro ao adicionar", description: e.message, variant: "destructive" }),
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (matchId: string) => {
+      const { error } = await supabase.from("matches").delete().eq("id", matchId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["adminMatches"] });
+      qc.invalidateQueries({ queryKey: ["matchesWithPredictions"] });
+      toast({ title: "Partida removida" });
+    },
+    onError: (e: Error) =>
+      toast({ title: "Erro ao remover", description: e.message, variant: "destructive" }),
   });
 
   const grouped = useMemo(() => {
     if (!matches) return [] as { date: string; items: DbMatch[] }[];
     const map = new Map<string, DbMatch[]>();
     matches.forEach((m) => {
-      const key = new Date(m.match_date).toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+      const key = new Date(m.match_date).toLocaleDateString("pt-BR", {
+        timeZone: "America/Sao_Paulo",
+      });
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(m);
     });
@@ -98,8 +206,12 @@ export default function AdminPage() {
           <CardContent className="py-12 flex flex-col items-center text-center gap-3">
             <ShieldAlert className="h-10 w-10 text-destructive" />
             <h2 className="text-lg font-semibold">Acesso restrito</h2>
-            <p className="text-sm text-muted-foreground">Esta área é exclusiva para administradores.</p>
-            <Button variant="outline" onClick={() => navigate("/")}>Voltar</Button>
+            <p className="text-sm text-muted-foreground">
+              Esta área é exclusiva para administradores.
+            </p>
+            <Button variant="outline" onClick={() => navigate("/")}>
+              Voltar
+            </Button>
           </CardContent>
         </Card>
       </AppLayout>
@@ -112,11 +224,131 @@ export default function AdminPage() {
   return (
     <AppLayout>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Admin · Placares</h1>
-          <p className="text-sm text-muted-foreground">
-            Lance os placares finais das partidas. Marque "Finalizada" para liberar a pontuação dos palpites.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold">Admin · Placares</h1>
+            <p className="text-sm text-muted-foreground">
+              Lance os placares finais das partidas. Marque "Finalizada" para liberar a pontuação dos
+              palpites.
+            </p>
+          </div>
+
+          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="h-4 w-4" /> Nova partida
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Adicionar partida</DialogTitle>
+                <DialogDescription>
+                  Preencha os dados da partida. A data/hora deve ser informada no horário local do
+                  navegador.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="grid gap-4 py-2">
+                <div className="grid gap-2">
+                  <Label htmlFor="match_date">Data e hora</Label>
+                  <Input
+                    id="match_date"
+                    type="datetime-local"
+                    value={form.match_date}
+                    onChange={(e) => setForm({ ...form, match_date: e.target.value })}
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="grid gap-2">
+                    <Label htmlFor="home_team">Time mandante</Label>
+                    <Input
+                      id="home_team"
+                      value={form.home_team}
+                      onChange={(e) => setForm({ ...form, home_team: e.target.value })}
+                      placeholder="Ex: Brasil"
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="away_team">Time visitante</Label>
+                    <Input
+                      id="away_team"
+                      value={form.away_team}
+                      onChange={(e) => setForm({ ...form, away_team: e.target.value })}
+                      placeholder="Ex: Argentina"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="grid gap-2">
+                    <Label htmlFor="stage">Fase</Label>
+                    <Select
+                      value={form.stage}
+                      onValueChange={(v) => setForm({ ...form, stage: v })}
+                    >
+                      <SelectTrigger id="stage">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {STAGE_OPTIONS.map((s) => (
+                          <SelectItem key={s.value} value={s.value}>
+                            {s.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="group_name">Grupo</Label>
+                    <Select
+                      value={form.group_name}
+                      onValueChange={(v) => setForm({ ...form, group_name: v })}
+                      disabled={form.stage !== "group"}
+                    >
+                      <SelectTrigger id="group_name">
+                        <SelectValue placeholder="Selecionar" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {GROUP_OPTIONS.map((g) => (
+                          <SelectItem key={g} value={g}>
+                            Grupo {g}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="venue">Estádio / Local</Label>
+                  <Input
+                    id="venue"
+                    value={form.venue}
+                    onChange={(e) => setForm({ ...form, venue: e.target.value })}
+                    placeholder="Ex: MetLife Stadium, Nova York/Nova Jersey"
+                  />
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setCreateOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button
+                  onClick={() => createMutation.mutate(form)}
+                  disabled={createMutation.isPending}
+                >
+                  {createMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
+                  Adicionar
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {grouped.map((g) => (
@@ -135,7 +367,7 @@ export default function AdminPage() {
                 return (
                   <div
                     key={m.id}
-                    className="grid grid-cols-1 md:grid-cols-[80px_1fr_auto_auto] gap-3 items-center border rounded-md p-3"
+                    className="grid grid-cols-1 md:grid-cols-[80px_1fr_auto_auto_auto] gap-3 items-center border rounded-md p-3"
                   >
                     <span className="text-xs text-muted-foreground">{time}</span>
                     <div className="flex items-center gap-2 text-sm font-medium">
@@ -172,6 +404,34 @@ export default function AdminPage() {
                     >
                       <Save className="h-4 w-4" /> Salvar
                     </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button size="sm" variant="destructive" aria-label="Remover partida">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Remover partida?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Esta ação removerá permanentemente a partida{" "}
+                            <strong>
+                              {m.home_team} × {m.away_team}
+                            </strong>{" "}
+                            e todos os palpites associados. Não é possível desfazer.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => deleteMutation.mutate(m.id)}
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                          >
+                            Remover
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 );
               })}
