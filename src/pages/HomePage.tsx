@@ -23,7 +23,6 @@ type Filter = "all" | "upcoming" | "finished";
 
 const SORT_LABELS: Record<SortField, string> = {
   date: "Data",
-  time: "Horário",
   group: "Grupo",
 };
 
@@ -123,7 +122,6 @@ export default function HomePage() {
                 onValueChange={(v) => setSortField(v as SortField)}
               >
                 <DropdownMenuRadioItem value="date">Data</DropdownMenuRadioItem>
-                <DropdownMenuRadioItem value="time">Horário</DropdownMenuRadioItem>
                 <DropdownMenuRadioItem value="group">Grupo</DropdownMenuRadioItem>
               </DropdownMenuRadioGroup>
               <DropdownMenuSeparator />
