@@ -108,6 +108,47 @@ export default function HomePage() {
             className="pl-9 h-9"
           />
         </div>
+
+        <div className="flex items-center gap-2 sm:ml-auto">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-9">
+                Ordenar: {SORT_LABELS[sortField]}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Ordenar por</DropdownMenuLabel>
+              <DropdownMenuRadioGroup
+                value={sortField}
+                onValueChange={(v) => setSortField(v as SortField)}
+              >
+                <DropdownMenuRadioItem value="date">Data</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="time">Horário</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="group">Grupo</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Direção</DropdownMenuLabel>
+              <DropdownMenuRadioGroup
+                value={sortDir}
+                onValueChange={(v) => setSortDir(v as SortDir)}
+              >
+                <DropdownMenuRadioItem value="asc">Ascendente</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="desc">Descendente</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9"
+            onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")}
+            aria-label={sortDir === "asc" ? "Inverter para descendente" : "Inverter para ascendente"}
+            title={sortDir === "asc" ? "Ascendente" : "Descendente"}
+          >
+            {sortDir === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -115,7 +156,13 @@ export default function HomePage() {
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <MatchList matches={filteredMatches} editable onPredictionSave={handlePredictionSave} />
+        <MatchList
+          matches={filteredMatches}
+          editable
+          onPredictionSave={handlePredictionSave}
+          sortField={sortField}
+          sortDir={sortDir}
+        />
       )}
     </AppLayout>
   );
