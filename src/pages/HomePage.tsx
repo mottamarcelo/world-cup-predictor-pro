@@ -1,18 +1,37 @@
 import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
-import { MatchList } from "@/components/MatchList";
+import { MatchList, type SortField, type SortDir } from "@/components/MatchList";
 import { UserSummary } from "@/components/UserSummary";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, ArrowUp, ArrowDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { useMatchesWithPredictions, useSavePrediction } from "@/hooks/useMatches";
 import { useMyLeagues } from "@/hooks/useLeagues";
 import { toast } from "sonner";
 
 type Filter = "all" | "upcoming" | "finished";
 
+const SORT_LABELS: Record<SortField, string> = {
+  date: "Data",
+  time: "Horário",
+  group: "Grupo",
+};
+
 export default function HomePage() {
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
+  const [sortField, setSortField] = useState<SortField>("date");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   const { data: allMatches = [], isLoading } = useMatchesWithPredictions();
   const { data: leagues = [] } = useMyLeagues();
@@ -89,6 +108,47 @@ export default function HomePage() {
             className="pl-9 h-9"
           />
         </div>
+
+        <div className="flex items-center gap-2 sm:ml-auto">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm" className="h-9">
+                Ordenar: {SORT_LABELS[sortField]}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuLabel>Ordenar por</DropdownMenuLabel>
+              <DropdownMenuRadioGroup
+                value={sortField}
+                onValueChange={(v) => setSortField(v as SortField)}
+              >
+                <DropdownMenuRadioItem value="date">Data</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="time">Horário</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="group">Grupo</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Direção</DropdownMenuLabel>
+              <DropdownMenuRadioGroup
+                value={sortDir}
+                onValueChange={(v) => setSortDir(v as SortDir)}
+              >
+                <DropdownMenuRadioItem value="asc">Ascendente</DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="desc">Descendente</DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Button
+            variant="outline"
+            size="icon"
+            className="h-9 w-9"
+            onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")}
+            aria-label={sortDir === "asc" ? "Inverter para descendente" : "Inverter para ascendente"}
+            title={sortDir === "asc" ? "Ascendente" : "Descendente"}
+          >
+            {sortDir === "asc" ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />}
+          </Button>
+        </div>
       </div>
 
       {isLoading ? (
@@ -96,7 +156,13 @@ export default function HomePage() {
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
       ) : (
-        <MatchList matches={filteredMatches} editable onPredictionSave={handlePredictionSave} />
+        <MatchList
+          matches={filteredMatches}
+          editable
+          onPredictionSave={handlePredictionSave}
+          sortField={sortField}
+          sortDir={sortDir}
+        />
       )}
     </AppLayout>
   );

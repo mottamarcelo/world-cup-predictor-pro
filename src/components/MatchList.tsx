@@ -3,29 +3,74 @@ import { MatchWithPrediction } from "@/types";
 import { MatchCard } from "./MatchCard";
 import { Calendar } from "lucide-react";
 
+export type SortField = "date" | "time" | "group";
+export type SortDir = "asc" | "desc";
+
 interface MatchListProps {
   matches: MatchWithPrediction[];
   editable?: boolean;
   hidePrediction?: boolean;
   onPredictionSave?: (matchId: string, homeScore: number, awayScore: number) => void;
+  sortField?: SortField;
+  sortDir?: SortDir;
 }
 
-export function MatchList({ matches, editable = false, hidePrediction = false, onPredictionSave }: MatchListProps) {
-  const groupedByDate = useMemo(() => {
-    const groups: { date: string; label: string; matches: MatchWithPrediction[] }[] = [];
-    const map = new Map<string, MatchWithPrediction[]>();
+function compareMatches(a: MatchWithPrediction, b: MatchWithPrediction, field: SortField): number {
+  if (field === "date") {
+    const dc = a.date.localeCompare(b.date);
+    if (dc !== 0) return dc;
+    return a.time.localeCompare(b.time);
+  }
+  if (field === "time") {
+    const tc = a.time.localeCompare(b.time);
+    if (tc !== 0) return tc;
+    return a.date.localeCompare(b.date);
+  }
+  // group
+  const gc = (a.group ?? "").localeCompare(b.group ?? "");
+  if (gc !== 0) return gc;
+  const dc = a.date.localeCompare(b.date);
+  if (dc !== 0) return dc;
+  return a.time.localeCompare(b.time);
+}
 
-    for (const match of matches) {
-      const existing = map.get(match.date);
-      if (existing) {
-        existing.push(match);
-      } else {
-        const arr = [match];
-        map.set(match.date, arr);
+export function MatchList({
+  matches,
+  editable = false,
+  hidePrediction = false,
+  onPredictionSave,
+  sortField = "date",
+  sortDir = "asc",
+}: MatchListProps) {
+  const groupedByDate = useMemo(() => {
+    const dirMul = sortDir === "asc" ? 1 : -1;
+
+    if (sortField === "group") {
+      // Group by group name instead of date
+      const map = new Map<string, MatchWithPrediction[]>();
+      for (const match of matches) {
+        const key = match.group ?? "Sem grupo";
+        const arr = map.get(key);
+        if (arr) arr.push(match);
+        else map.set(key, [match]);
       }
+      const groups = Array.from(map.entries()).map(([key, arr]) => {
+        arr.sort((a, b) => compareMatches(a, b, "date") * dirMul);
+        return { date: key, label: key, matches: arr };
+      });
+      groups.sort((a, b) => a.label.localeCompare(b.label) * dirMul);
+      return groups;
     }
 
-    for (const [date, dateMatches] of map) {
+    // Group by date for date/time sorts
+    const map = new Map<string, MatchWithPrediction[]>();
+    for (const match of matches) {
+      const arr = map.get(match.date);
+      if (arr) arr.push(match);
+      else map.set(match.date, [match]);
+    }
+
+    const groups = Array.from(map.entries()).map(([date, dateMatches]) => {
       const d = new Date(date + "T12:00:00");
       const label = d.toLocaleDateString("pt-BR", {
         weekday: "long",
@@ -33,17 +78,13 @@ export function MatchList({ matches, editable = false, hidePrediction = false, o
         month: "long",
         year: "numeric",
       });
-      // Sort within day by time, then by group
-      dateMatches.sort((a, b) => {
-        const timeCmp = a.time.localeCompare(b.time);
-        if (timeCmp !== 0) return timeCmp;
-        return (a.group ?? "").localeCompare(b.group ?? "");
-      });
-      groups.push({ date, label, matches: dateMatches });
-    }
+      dateMatches.sort((a, b) => compareMatches(a, b, sortField) * dirMul);
+      return { date, label, matches: dateMatches };
+    });
 
+    groups.sort((a, b) => a.date.localeCompare(b.date) * dirMul);
     return groups;
-  }, [matches]);
+  }, [matches, sortField, sortDir]);
 
   if (matches.length === 0) {
     return (
@@ -58,13 +99,12 @@ export function MatchList({ matches, editable = false, hidePrediction = false, o
     <div className="space-y-6">
       {groupedByDate.map((group) => (
         <div key={group.date}>
-          {/* Date header */}
+          {/* Group header */}
           <div className="flex items-center gap-2 mb-3 sticky top-0 z-10 bg-background/95 backdrop-blur-sm py-2">
             <Calendar className="h-4 w-4 text-primary" />
             <h3 className="text-sm font-semibold capitalize text-foreground">{group.label}</h3>
           </div>
 
-          {/* Centered flex layout - cards keep consistent size and stay centered */}
           <div className="flex flex-wrap justify-center gap-4 max-w-5xl mx-auto">
             {group.matches.map((match) => (
               <div key={match.id} className="w-full lg:w-[calc(50%-0.5rem)]">
