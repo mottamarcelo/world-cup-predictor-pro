@@ -1,18 +1,37 @@
 import { useState, useMemo } from "react";
 import { AppLayout } from "@/components/AppLayout";
-import { MatchList } from "@/components/MatchList";
+import { MatchList, type SortField, type SortDir } from "@/components/MatchList";
 import { UserSummary } from "@/components/UserSummary";
-import { Search, Loader2 } from "lucide-react";
+import { Search, Loader2, ArrowUp, ArrowDown } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { useMatchesWithPredictions, useSavePrediction } from "@/hooks/useMatches";
 import { useMyLeagues } from "@/hooks/useLeagues";
 import { toast } from "sonner";
 
 type Filter = "all" | "upcoming" | "finished";
 
+const SORT_LABELS: Record<SortField, string> = {
+  date: "Data",
+  time: "Horário",
+  group: "Grupo",
+};
+
 export default function HomePage() {
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
+  const [sortField, setSortField] = useState<SortField>("date");
+  const [sortDir, setSortDir] = useState<SortDir>("asc");
 
   const { data: allMatches = [], isLoading } = useMatchesWithPredictions();
   const { data: leagues = [] } = useMyLeagues();
