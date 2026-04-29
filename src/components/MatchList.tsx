@@ -3,7 +3,7 @@ import { MatchWithPrediction } from "@/types";
 import { MatchCard } from "./MatchCard";
 import { Calendar } from "lucide-react";
 
-export type SortField = "date" | "time" | "group";
+export type SortField = "date" | "group";
 export type SortDir = "asc" | "desc";
 
 interface MatchListProps {
@@ -20,11 +20,6 @@ function compareMatches(a: MatchWithPrediction, b: MatchWithPrediction, field: S
     const dc = a.date.localeCompare(b.date);
     if (dc !== 0) return dc;
     return a.time.localeCompare(b.time);
-  }
-  if (field === "time") {
-    const tc = a.time.localeCompare(b.time);
-    if (tc !== 0) return tc;
-    return a.date.localeCompare(b.date);
   }
   // group
   const gc = (a.group ?? "").localeCompare(b.group ?? "");
