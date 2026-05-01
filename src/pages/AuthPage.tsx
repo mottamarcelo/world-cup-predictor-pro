@@ -6,6 +6,36 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
+const PASSWORD_RULES = [
+  { id: "len", label: "Pelo menos 8 caracteres", test: (p: string) => p.length >= 8 },
+  { id: "lower", label: "Uma letra minúscula (a-z)", test: (p: string) => /[a-z]/.test(p) },
+  { id: "upper", label: "Uma letra maiúscula (A-Z)", test: (p: string) => /[A-Z]/.test(p) },
+  { id: "digit", label: "Um número (0-9)", test: (p: string) => /\d/.test(p) },
+  { id: "symbol", label: "Um caractere especial (!@#$...)", test: (p: string) => /[^A-Za-z0-9]/.test(p) },
+];
+
+function translateAuthError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("password should contain") || m.includes("weak password") || m.includes("password should be")) {
+    return "Senha fraca. Atenda a todos os requisitos listados abaixo do campo de senha.";
+  }
+  if (m.includes("password") && m.includes("at least") && m.includes("character")) {
+    return "A senha não atende ao tamanho mínimo exigido.";
+  }
+  if (m.includes("registered") || m.includes("already")) {
+    return "Este email já está cadastrado. Faça login.";
+  }
+  if (m.includes("invalid") && m.includes("email")) {
+    return "E-mail inválido.";
+  }
+  if (m.includes("invalid")) {
+    return "Email ou senha inválidos.";
+  }
+  if (m.includes("rate limit") || m.includes("too many")) {
+    return "Muitas tentativas. Aguarde alguns instantes e tente novamente.";
+  }
+  return message;
+}
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState("");
