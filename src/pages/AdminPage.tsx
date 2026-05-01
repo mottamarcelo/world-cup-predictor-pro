@@ -178,11 +178,46 @@ export default function AdminPage() {
       qc.invalidateQueries({ queryKey: ["adminMatches"] });
       qc.invalidateQueries({ queryKey: ["matchesWithPredictions"] });
       toast({ title: "Partida adicionada" });
-      setCreateOpen(false);
+      setDialogOpen(false);
       setForm(emptyForm);
     },
     onError: (e: Error) =>
       toast({ title: "Erro ao adicionar", description: e.message, variant: "destructive" }),
+  });
+
+  const updateMatchMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: NewMatchForm }) => {
+      if (!data.match_date || !data.home_team.trim() || !data.away_team.trim()) {
+        throw new Error("Preencha data, time mandante e time visitante.");
+      }
+      const target = matches?.find((mm) => mm.id === id);
+      if (target?.status === "finished") {
+        throw new Error("Partidas finalizadas não podem ser editadas.");
+      }
+      const isoDate = new Date(data.match_date).toISOString();
+      const payload = {
+        match_date: isoDate,
+        home_team: data.home_team.trim(),
+        away_team: data.away_team.trim(),
+        home_code: data.home_team.trim(),
+        away_code: data.away_team.trim(),
+        group_name: data.stage === "group" ? (data.group_name || null) : null,
+        stage: data.stage,
+        venue: data.venue.trim() || null,
+      };
+      const { error } = await supabase.from("matches").update(payload).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["adminMatches"] });
+      qc.invalidateQueries({ queryKey: ["matchesWithPredictions"] });
+      toast({ title: "Partida atualizada" });
+      setDialogOpen(false);
+      setEditingId(null);
+      setForm(emptyForm);
+    },
+    onError: (e: Error) =>
+      toast({ title: "Erro ao atualizar", description: e.message, variant: "destructive" }),
   });
 
   const deleteMutation = useMutation({
