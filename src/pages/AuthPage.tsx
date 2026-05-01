@@ -110,10 +110,11 @@ export default function AuthPage() {
           },
         });
         if (error) {
-          const msg = error.message.toLowerCase().includes("registered")
-            ? "Este email já está cadastrado. Faça login."
-            : error.message;
-          toast({ title: "Erro ao criar conta", description: msg, variant: "destructive" });
+          toast({
+            title: "Erro ao criar conta",
+            description: translateAuthError(error.message),
+            variant: "destructive",
+          });
           return;
         }
         toast({ title: "Conta criada com sucesso!", description: "Você já pode entrar." });
