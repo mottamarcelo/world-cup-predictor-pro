@@ -30,8 +30,13 @@ export default function AuthPage() {
     if (loading) return;
 
     const trimmedEmail = email.trim();
+    const trimmedName = name.trim();
     if (!trimmedEmail || !password) {
       toast({ title: "Preencha email e senha", variant: "destructive" });
+      return;
+    }
+    if (!isLogin && (trimmedName.length < 2 || trimmedName.length > 60)) {
+      toast({ title: "Informe um nome entre 2 e 60 caracteres", variant: "destructive" });
       return;
     }
     if (password.length < 6) {
