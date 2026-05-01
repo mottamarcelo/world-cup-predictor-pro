@@ -1,11 +1,41 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trophy, Mail, Lock, Loader2, User } from "lucide-react";
+import { Trophy, Mail, Lock, Loader2, User, Check, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
+const PASSWORD_RULES = [
+  { id: "len", label: "Pelo menos 8 caracteres", test: (p: string) => p.length >= 8 },
+  { id: "lower", label: "Uma letra minúscula (a-z)", test: (p: string) => /[a-z]/.test(p) },
+  { id: "upper", label: "Uma letra maiúscula (A-Z)", test: (p: string) => /[A-Z]/.test(p) },
+  { id: "digit", label: "Um número (0-9)", test: (p: string) => /\d/.test(p) },
+  { id: "symbol", label: "Um caractere especial (!@#$...)", test: (p: string) => /[^A-Za-z0-9]/.test(p) },
+];
+
+function translateAuthError(message: string): string {
+  const m = message.toLowerCase();
+  if (m.includes("password should contain") || m.includes("weak password") || m.includes("password should be")) {
+    return "Senha fraca. Atenda a todos os requisitos listados abaixo do campo de senha.";
+  }
+  if (m.includes("password") && m.includes("at least") && m.includes("character")) {
+    return "A senha não atende ao tamanho mínimo exigido.";
+  }
+  if (m.includes("registered") || m.includes("already")) {
+    return "Este email já está cadastrado. Faça login.";
+  }
+  if (m.includes("invalid") && m.includes("email")) {
+    return "E-mail inválido.";
+  }
+  if (m.includes("invalid")) {
+    return "Email ou senha inválidos.";
+  }
+  if (m.includes("rate limit") || m.includes("too many")) {
+    return "Muitas tentativas. Aguarde alguns instantes e tente novamente.";
+  }
+  return message;
+}
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
   const [name, setName] = useState("");
@@ -39,7 +69,17 @@ export default function AuthPage() {
       toast({ title: "Informe um nome entre 2 e 60 caracteres", variant: "destructive" });
       return;
     }
-    if (password.length < 6) {
+    if (!isLogin) {
+      const failed = PASSWORD_RULES.filter((r) => !r.test(password));
+      if (failed.length > 0) {
+        toast({
+          title: "Senha não atende aos requisitos",
+          description: failed.map((r) => `• ${r.label}`).join("\n"),
+          variant: "destructive",
+        });
+        return;
+      }
+    } else if (password.length < 6) {
       toast({ title: "A senha deve ter ao menos 6 caracteres", variant: "destructive" });
       return;
     }
@@ -52,10 +92,11 @@ export default function AuthPage() {
           password,
         });
         if (error) {
-          const msg = error.message.toLowerCase().includes("invalid")
-            ? "Email ou senha inválidos"
-            : error.message;
-          toast({ title: "Erro ao entrar", description: msg, variant: "destructive" });
+          toast({
+            title: "Erro ao entrar",
+            description: translateAuthError(error.message),
+            variant: "destructive",
+          });
           return;
         }
         toast({ title: "Bem-vindo de volta!" });
@@ -69,10 +110,11 @@ export default function AuthPage() {
           },
         });
         if (error) {
-          const msg = error.message.toLowerCase().includes("registered")
-            ? "Este email já está cadastrado. Faça login."
-            : error.message;
-          toast({ title: "Erro ao criar conta", description: msg, variant: "destructive" });
+          toast({
+            title: "Erro ao criar conta",
+            description: translateAuthError(error.message),
+            variant: "destructive",
+          });
           return;
         }
         toast({ title: "Conta criada com sucesso!", description: "Você já pode entrar." });
@@ -148,17 +190,49 @@ export default function AuthPage() {
               required
             />
           </div>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="password"
-              placeholder="Senha (mín. 6 caracteres)"
-              className="pl-10"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete={isLogin ? "current-password" : "new-password"}
-              required
-            />
+          <div className="space-y-2">
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="password"
+                placeholder={isLogin ? "Senha" : "Crie uma senha forte"}
+                className="pl-10"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete={isLogin ? "current-password" : "new-password"}
+                aria-describedby={!isLogin ? "password-requirements" : undefined}
+                required
+              />
+            </div>
+            {!isLogin && (
+              <ul
+                id="password-requirements"
+                className="rounded-md border border-border bg-muted/40 px-3 py-2 space-y-1"
+                aria-label="Requisitos de senha"
+              >
+                <li className="text-xs font-medium text-muted-foreground mb-1">
+                  Sua senha deve conter:
+                </li>
+                {PASSWORD_RULES.map((rule) => {
+                  const ok = rule.test(password);
+                  return (
+                    <li
+                      key={rule.id}
+                      className={`flex items-center gap-2 text-xs ${
+                        ok ? "text-emerald-500" : "text-muted-foreground"
+                      }`}
+                    >
+                      {ok ? (
+                        <Check className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                      ) : (
+                        <X className="h-3.5 w-3.5 shrink-0 opacity-60" aria-hidden />
+                      )}
+                      <span>{rule.label}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
