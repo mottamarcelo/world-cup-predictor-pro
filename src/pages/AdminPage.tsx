@@ -468,6 +468,16 @@ export default function AdminPage() {
                     >
                       <Save className="h-4 w-4" /> Salvar
                     </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => openEdit(m)}
+                      disabled={m.status === "finished"}
+                      aria-label="Editar partida"
+                      title={m.status === "finished" ? "Partida finalizada não pode ser editada" : "Editar partida"}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button size="sm" variant="destructive" aria-label="Remover partida">
