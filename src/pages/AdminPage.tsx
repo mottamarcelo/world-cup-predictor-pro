@@ -94,8 +94,31 @@ export default function AdminPage() {
   });
 
   const [rows, setRows] = useState<Record<string, RowState>>({});
-  const [createOpen, setCreateOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<NewMatchForm>(emptyForm);
+
+  const openCreate = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setDialogOpen(true);
+  };
+
+  const openEdit = (m: DbMatch) => {
+    const d = new Date(m.match_date);
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    const local = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    setEditingId(m.id);
+    setForm({
+      match_date: local,
+      home_team: m.home_team,
+      away_team: m.away_team,
+      group_name: m.group_name ?? "",
+      stage: m.stage ?? "group",
+      venue: m.venue ?? "",
+    });
+    setDialogOpen(true);
+  };
 
   useEffect(() => {
     if (!matches) return;
