@@ -92,10 +92,11 @@ export default function AuthPage() {
           password,
         });
         if (error) {
-          const msg = error.message.toLowerCase().includes("invalid")
-            ? "Email ou senha inválidos"
-            : error.message;
-          toast({ title: "Erro ao entrar", description: msg, variant: "destructive" });
+          toast({
+            title: "Erro ao entrar",
+            description: translateAuthError(error.message),
+            variant: "destructive",
+          });
           return;
         }
         toast({ title: "Bem-vindo de volta!" });
