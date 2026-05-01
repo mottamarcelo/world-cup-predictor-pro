@@ -190,17 +190,49 @@ export default function AuthPage() {
               required
             />
           </div>
-          <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="password"
-              placeholder="Senha (mín. 6 caracteres)"
-              className="pl-10"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              autoComplete={isLogin ? "current-password" : "new-password"}
-              required
-            />
+          <div className="space-y-2">
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="password"
+                placeholder={isLogin ? "Senha" : "Crie uma senha forte"}
+                className="pl-10"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete={isLogin ? "current-password" : "new-password"}
+                aria-describedby={!isLogin ? "password-requirements" : undefined}
+                required
+              />
+            </div>
+            {!isLogin && (
+              <ul
+                id="password-requirements"
+                className="rounded-md border border-border bg-muted/40 px-3 py-2 space-y-1"
+                aria-label="Requisitos de senha"
+              >
+                <li className="text-xs font-medium text-muted-foreground mb-1">
+                  Sua senha deve conter:
+                </li>
+                {PASSWORD_RULES.map((rule) => {
+                  const ok = rule.test(password);
+                  return (
+                    <li
+                      key={rule.id}
+                      className={`flex items-center gap-2 text-xs ${
+                        ok ? "text-emerald-500" : "text-muted-foreground"
+                      }`}
+                    >
+                      {ok ? (
+                        <Check className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                      ) : (
+                        <X className="h-3.5 w-3.5 shrink-0 opacity-60" aria-hidden />
+                      )}
+                      <span>{rule.label}</span>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
 
           <Button type="submit" className="w-full" disabled={loading}>
