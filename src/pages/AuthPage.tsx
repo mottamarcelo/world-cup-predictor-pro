@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Trophy, Mail, Lock, Loader2 } from "lucide-react";
+import { Trophy, Mail, Lock, Loader2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,6 +8,7 @@ import { toast } from "@/hooks/use-toast";
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -29,8 +30,13 @@ export default function AuthPage() {
     if (loading) return;
 
     const trimmedEmail = email.trim();
+    const trimmedName = name.trim();
     if (!trimmedEmail || !password) {
       toast({ title: "Preencha email e senha", variant: "destructive" });
+      return;
+    }
+    if (!isLogin && (trimmedName.length < 2 || trimmedName.length > 60)) {
+      toast({ title: "Informe um nome entre 2 e 60 caracteres", variant: "destructive" });
       return;
     }
     if (password.length < 6) {
@@ -57,7 +63,10 @@ export default function AuthPage() {
         const { error } = await supabase.auth.signUp({
           email: trimmedEmail,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/` },
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: { name: trimmedName },
+          },
         });
         if (error) {
           const msg = error.message.toLowerCase().includes("registered")
@@ -112,6 +121,21 @@ export default function AuthPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {!isLogin && (
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Nome (exibido na pontuação)"
+                className="pl-10"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoComplete="name"
+                maxLength={60}
+                required
+              />
+            </div>
+          )}
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
