@@ -291,15 +291,15 @@ export default function AdminPage() {
             </p>
           </div>
 
-          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+          <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setEditingId(null); setForm(emptyForm); } }}>
             <DialogTrigger asChild>
-              <Button>
+              <Button onClick={openCreate}>
                 <Plus className="h-4 w-4" /> Nova partida
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-lg">
               <DialogHeader>
-                <DialogTitle>Adicionar partida</DialogTitle>
+                <DialogTitle>{editingId ? "Editar partida" : "Adicionar partida"}</DialogTitle>
                 <DialogDescription>
                   Preencha os dados da partida. A data/hora deve ser informada no horário local do
                   navegador.
@@ -390,19 +390,25 @@ export default function AdminPage() {
               </div>
 
               <DialogFooter>
-                <Button variant="outline" onClick={() => setCreateOpen(false)}>
+                <Button variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancelar
                 </Button>
                 <Button
-                  onClick={() => createMutation.mutate(form)}
-                  disabled={createMutation.isPending}
+                  onClick={() =>
+                    editingId
+                      ? updateMatchMutation.mutate({ id: editingId, data: form })
+                      : createMutation.mutate(form)
+                  }
+                  disabled={createMutation.isPending || updateMatchMutation.isPending}
                 >
-                  {createMutation.isPending ? (
+                  {(createMutation.isPending || updateMatchMutation.isPending) ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : editingId ? (
+                    <Save className="h-4 w-4" />
                   ) : (
                     <Plus className="h-4 w-4" />
                   )}
-                  Adicionar
+                  {editingId ? "Salvar alterações" : "Adicionar"}
                 </Button>
               </DialogFooter>
             </DialogContent>
