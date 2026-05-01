@@ -121,6 +121,21 @@ export default function AuthPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {!isLogin && (
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Nome (exibido na pontuação)"
+                className="pl-10"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoComplete="name"
+                maxLength={60}
+                required
+              />
+            </div>
+          )}
           <div className="relative">
             <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
