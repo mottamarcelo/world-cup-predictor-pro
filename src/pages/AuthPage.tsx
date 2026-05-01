@@ -63,7 +63,10 @@ export default function AuthPage() {
         const { error } = await supabase.auth.signUp({
           email: trimmedEmail,
           password,
-          options: { emailRedirectTo: `${window.location.origin}/` },
+          options: {
+            emailRedirectTo: `${window.location.origin}/`,
+            data: { name: trimmedName },
+          },
         });
         if (error) {
           const msg = error.message.toLowerCase().includes("registered")
