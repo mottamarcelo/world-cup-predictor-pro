@@ -69,7 +69,17 @@ export default function AuthPage() {
       toast({ title: "Informe um nome entre 2 e 60 caracteres", variant: "destructive" });
       return;
     }
-    if (password.length < 6) {
+    if (!isLogin) {
+      const failed = PASSWORD_RULES.filter((r) => !r.test(password));
+      if (failed.length > 0) {
+        toast({
+          title: "Senha não atende aos requisitos",
+          description: failed.map((r) => `• ${r.label}`).join("\n"),
+          variant: "destructive",
+        });
+        return;
+      }
+    } else if (password.length < 6) {
       toast({ title: "A senha deve ter ao menos 6 caracteres", variant: "destructive" });
       return;
     }
