@@ -431,7 +431,7 @@ export default function AdminPage() {
                 return (
                   <div
                     key={m.id}
-                    className="grid grid-cols-1 md:grid-cols-[80px_1fr_auto_auto_auto] gap-3 items-center border rounded-md p-3"
+                    className="grid grid-cols-1 md:grid-cols-[80px_1fr_auto_auto_auto_auto] gap-3 items-center border rounded-md p-3"
                   >
                     <span className="text-xs text-muted-foreground">{time}</span>
                     <div className="flex items-center gap-2 text-sm font-medium">
