@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Loader2, Plus, Save, ShieldAlert, Trash2 } from "lucide-react";
+import { Loader2, Pencil, Plus, Save, ShieldAlert, Trash2 } from "lucide-react";
 import { AppLayout } from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -94,8 +94,31 @@ export default function AdminPage() {
   });
 
   const [rows, setRows] = useState<Record<string, RowState>>({});
-  const [createOpen, setCreateOpen] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<NewMatchForm>(emptyForm);
+
+  const openCreate = () => {
+    setEditingId(null);
+    setForm(emptyForm);
+    setDialogOpen(true);
+  };
+
+  const openEdit = (m: DbMatch) => {
+    const d = new Date(m.match_date);
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    const local = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    setEditingId(m.id);
+    setForm({
+      match_date: local,
+      home_team: m.home_team,
+      away_team: m.away_team,
+      group_name: m.group_name ?? "",
+      stage: m.stage ?? "group",
+      venue: m.venue ?? "",
+    });
+    setDialogOpen(true);
+  };
 
   useEffect(() => {
     if (!matches) return;
@@ -155,11 +178,46 @@ export default function AdminPage() {
       qc.invalidateQueries({ queryKey: ["adminMatches"] });
       qc.invalidateQueries({ queryKey: ["matchesWithPredictions"] });
       toast({ title: "Partida adicionada" });
-      setCreateOpen(false);
+      setDialogOpen(false);
       setForm(emptyForm);
     },
     onError: (e: Error) =>
       toast({ title: "Erro ao adicionar", description: e.message, variant: "destructive" }),
+  });
+
+  const updateMatchMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: NewMatchForm }) => {
+      if (!data.match_date || !data.home_team.trim() || !data.away_team.trim()) {
+        throw new Error("Preencha data, time mandante e time visitante.");
+      }
+      const target = matches?.find((mm) => mm.id === id);
+      if (target?.status === "finished") {
+        throw new Error("Partidas finalizadas não podem ser editadas.");
+      }
+      const isoDate = new Date(data.match_date).toISOString();
+      const payload = {
+        match_date: isoDate,
+        home_team: data.home_team.trim(),
+        away_team: data.away_team.trim(),
+        home_code: data.home_team.trim(),
+        away_code: data.away_team.trim(),
+        group_name: data.stage === "group" ? (data.group_name || null) : null,
+        stage: data.stage,
+        venue: data.venue.trim() || null,
+      };
+      const { error } = await supabase.from("matches").update(payload).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["adminMatches"] });
+      qc.invalidateQueries({ queryKey: ["matchesWithPredictions"] });
+      toast({ title: "Partida atualizada" });
+      setDialogOpen(false);
+      setEditingId(null);
+      setForm(emptyForm);
+    },
+    onError: (e: Error) =>
+      toast({ title: "Erro ao atualizar", description: e.message, variant: "destructive" }),
   });
 
   const deleteMutation = useMutation({
@@ -233,15 +291,15 @@ export default function AdminPage() {
             </p>
           </div>
 
-          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+          <Dialog open={dialogOpen} onOpenChange={(o) => { setDialogOpen(o); if (!o) { setEditingId(null); setForm(emptyForm); } }}>
             <DialogTrigger asChild>
-              <Button>
+              <Button onClick={openCreate}>
                 <Plus className="h-4 w-4" /> Nova partida
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-lg">
               <DialogHeader>
-                <DialogTitle>Adicionar partida</DialogTitle>
+                <DialogTitle>{editingId ? "Editar partida" : "Adicionar partida"}</DialogTitle>
                 <DialogDescription>
                   Preencha os dados da partida. A data/hora deve ser informada no horário local do
                   navegador.
@@ -332,19 +390,25 @@ export default function AdminPage() {
               </div>
 
               <DialogFooter>
-                <Button variant="outline" onClick={() => setCreateOpen(false)}>
+                <Button variant="outline" onClick={() => setDialogOpen(false)}>
                   Cancelar
                 </Button>
                 <Button
-                  onClick={() => createMutation.mutate(form)}
-                  disabled={createMutation.isPending}
+                  onClick={() =>
+                    editingId
+                      ? updateMatchMutation.mutate({ id: editingId, data: form })
+                      : createMutation.mutate(form)
+                  }
+                  disabled={createMutation.isPending || updateMatchMutation.isPending}
                 >
-                  {createMutation.isPending ? (
+                  {(createMutation.isPending || updateMatchMutation.isPending) ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : editingId ? (
+                    <Save className="h-4 w-4" />
                   ) : (
                     <Plus className="h-4 w-4" />
                   )}
-                  Adicionar
+                  {editingId ? "Salvar alterações" : "Adicionar"}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -367,7 +431,7 @@ export default function AdminPage() {
                 return (
                   <div
                     key={m.id}
-                    className="grid grid-cols-1 md:grid-cols-[80px_1fr_auto_auto_auto] gap-3 items-center border rounded-md p-3"
+                    className="grid grid-cols-1 md:grid-cols-[80px_1fr_auto_auto_auto_auto] gap-3 items-center border rounded-md p-3"
                   >
                     <span className="text-xs text-muted-foreground">{time}</span>
                     <div className="flex items-center gap-2 text-sm font-medium">
@@ -403,6 +467,16 @@ export default function AdminPage() {
                       disabled={saveMutation.isPending}
                     >
                       <Save className="h-4 w-4" /> Salvar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => openEdit(m)}
+                      disabled={m.status === "finished"}
+                      aria-label="Editar partida"
+                      title={m.status === "finished" ? "Partida finalizada não pode ser editada" : "Editar partida"}
+                    >
+                      <Pencil className="h-4 w-4" />
                     </Button>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
