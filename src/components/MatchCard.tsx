@@ -160,8 +160,8 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
         {/* Home team */}
         <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
           <TeamFlag code={match.homeTeam.code} name={match.homeTeam.name} />
-          <div className="min-w-0 text-center">
-            <p className="text-sm font-semibold truncate">{match.homeTeam.name}</p>
+          <div className="min-w-0 max-w-full text-center w-full">
+            <p className="text-sm font-semibold truncate w-full">{match.homeTeam.name}</p>
             <p className="text-[11px] text-muted-foreground">{match.homeTeam.code}</p>
           </div>
         </div>
@@ -207,8 +207,8 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
         {/* Away team */}
         <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
           <TeamFlag code={match.awayTeam.code} name={match.awayTeam.name} />
-          <div className="min-w-0 text-center">
-            <p className="text-sm font-semibold truncate">{match.awayTeam.name}</p>
+          <div className="min-w-0 max-w-full text-center w-full">
+            <p className="text-sm font-semibold truncate w-full">{match.awayTeam.name}</p>
             <p className="text-[11px] text-muted-foreground">{match.awayTeam.code}</p>
           </div>
         </div>
