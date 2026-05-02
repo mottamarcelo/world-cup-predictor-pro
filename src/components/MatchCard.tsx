@@ -141,8 +141,9 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
       {/* Top: time, group, status */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
+          <span className="flex items-center gap-1 tabular-nums">
+            {match.date.slice(8, 10)}/{match.date.slice(5, 7)}
+            <Clock className="h-3 w-3 ml-1" />
             {match.time}
           </span>
           {match.group && (
