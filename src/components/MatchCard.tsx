@@ -205,12 +205,12 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
         </div>
 
         {/* Away team */}
-        <div className="flex items-center gap-2 flex-1 min-w-0 justify-end text-right">
-          <div className="min-w-0">
+        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+          <TeamFlag code={match.awayTeam.code} name={match.awayTeam.name} />
+          <div className="min-w-0 text-center">
             <p className="text-sm font-semibold truncate">{match.awayTeam.name}</p>
             <p className="text-[11px] text-muted-foreground">{match.awayTeam.code}</p>
           </div>
-          <TeamFlag code={match.awayTeam.code} name={match.awayTeam.name} />
         </div>
       </div>
 
