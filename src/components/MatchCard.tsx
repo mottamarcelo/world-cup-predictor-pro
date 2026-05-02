@@ -59,18 +59,18 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
       <button
         type="button"
         onClick={() => increment(value, onChange)}
-        className="w-5 h-4 flex items-center justify-center rounded-sm text-muted-foreground hover:bg-muted transition-colors"
+        className="w-7 h-6 flex items-center justify-center rounded-sm text-muted-foreground hover:bg-muted transition-colors"
         aria-label={`Aumentar ${label}`}
       >
-        <ChevronUp className="h-3 w-3" />
+        <ChevronUp className="h-5 w-5" />
       </button>
       <button
         type="button"
         onClick={() => decrement(value, onChange)}
-        className="w-5 h-4 flex items-center justify-center rounded-sm text-muted-foreground hover:bg-muted transition-colors"
+        className="w-7 h-6 flex items-center justify-center rounded-sm text-muted-foreground hover:bg-muted transition-colors"
         aria-label={`Diminuir ${label}`}
       >
-        <ChevronDown className="h-3 w-3" />
+        <ChevronDown className="h-5 w-5" />
       </button>
     </div>
   );
@@ -86,7 +86,7 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
         setSaved(false);
       }}
       placeholder="-"
-      className="w-8 h-8 text-center text-base font-bold tabular-nums rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+      className="w-12 h-12 text-center text-xl font-bold tabular-nums rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
     />
   );
 
@@ -158,9 +158,9 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
       {/* Teams & Score/Prediction */}
       <div className="flex items-center justify-between gap-2 mb-3">
         {/* Home team */}
-        <div className="flex items-center gap-2 flex-1 min-w-0">
+        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
           <TeamFlag code={match.homeTeam.code} name={match.homeTeam.name} />
-          <div className="min-w-0">
+          <div className="min-w-0 text-center">
             <p className="text-sm font-semibold truncate">{match.homeTeam.name}</p>
             <p className="text-[11px] text-muted-foreground">{match.homeTeam.code}</p>
           </div>
@@ -205,12 +205,12 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
         </div>
 
         {/* Away team */}
-        <div className="flex items-center gap-2 flex-1 min-w-0 justify-end text-right">
-          <div className="min-w-0">
+        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
+          <TeamFlag code={match.awayTeam.code} name={match.awayTeam.name} />
+          <div className="min-w-0 text-center">
             <p className="text-sm font-semibold truncate">{match.awayTeam.name}</p>
             <p className="text-[11px] text-muted-foreground">{match.awayTeam.code}</p>
           </div>
-          <TeamFlag code={match.awayTeam.code} name={match.awayTeam.name} />
         </div>
       </div>
 
