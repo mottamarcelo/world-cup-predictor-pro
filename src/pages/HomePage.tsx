@@ -87,7 +87,7 @@ export default function HomePage() {
       <UserSummary {...stats} />
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-6 mb-4">
-        <div className="flex gap-1">
+        <div className="flex gap-1 justify-center sm:justify-start">
           {filters.map((f) => (
             <button
               key={f.value}
@@ -111,8 +111,9 @@ export default function HomePage() {
         <div className="flex items-center gap-2 sm:ml-auto">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9">
-                Ordenar: {SORT_LABELS[sortField]}
+              <Button variant="outline" size="sm" className="h-9 px-2 sm:px-3">
+                <span className="sm:hidden">{SORT_LABELS[sortField]}</span>
+                <span className="hidden sm:inline">Ordenar: {SORT_LABELS[sortField]}</span>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
