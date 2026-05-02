@@ -59,18 +59,18 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
       <button
         type="button"
         onClick={() => increment(value, onChange)}
-        className="w-5 h-4 flex items-center justify-center rounded-sm text-muted-foreground hover:bg-muted transition-colors"
+        className="w-7 h-6 flex items-center justify-center rounded-sm text-muted-foreground hover:bg-muted transition-colors"
         aria-label={`Aumentar ${label}`}
       >
-        <ChevronUp className="h-3 w-3" />
+        <ChevronUp className="h-5 w-5" />
       </button>
       <button
         type="button"
         onClick={() => decrement(value, onChange)}
-        className="w-5 h-4 flex items-center justify-center rounded-sm text-muted-foreground hover:bg-muted transition-colors"
+        className="w-7 h-6 flex items-center justify-center rounded-sm text-muted-foreground hover:bg-muted transition-colors"
         aria-label={`Diminuir ${label}`}
       >
-        <ChevronDown className="h-3 w-3" />
+        <ChevronDown className="h-5 w-5" />
       </button>
     </div>
   );
@@ -86,7 +86,7 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
         setSaved(false);
       }}
       placeholder="-"
-      className="w-8 h-8 text-center text-base font-bold tabular-nums rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+      className="w-12 h-12 text-center text-xl font-bold tabular-nums rounded-md border border-input bg-background focus:outline-none focus:ring-2 focus:ring-ring"
     />
   );
 
