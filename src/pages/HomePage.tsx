@@ -98,20 +98,21 @@ export default function HomePage() {
             </button>
           ))}
         </div>
-        <div className="relative flex-1 max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar seleção..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 h-9"
-          />
-        </div>
 
         <div className="flex items-center gap-2 sm:ml-auto">
+          <div className="relative flex-1 sm:flex-initial sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar seleção..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9 h-9"
+            />
+          </div>
+
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-9 px-2 sm:px-3">
+              <Button variant="outline" size="sm" className="h-9 px-2 sm:px-3 shrink-0">
                 <span className="sm:hidden">{SORT_LABELS[sortField]}</span>
                 <span className="hidden sm:inline">Ordenar: {SORT_LABELS[sortField]}</span>
               </Button>
@@ -140,7 +141,7 @@ export default function HomePage() {
           <Button
             variant="outline"
             size="icon"
-            className="h-9 w-9"
+            className="h-9 w-9 shrink-0"
             onClick={() => setSortDir(sortDir === "asc" ? "desc" : "asc")}
             aria-label={sortDir === "asc" ? "Inverter para descendente" : "Inverter para ascendente"}
             title={sortDir === "asc" ? "Ascendente" : "Descendente"}
