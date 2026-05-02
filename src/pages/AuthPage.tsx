@@ -131,12 +131,9 @@ export default function AuthPage() {
         <div className="flex items-center justify-center gap-2 mb-3">
           <Trophy className="h-8 w-8 text-accent" />
           <h1 className="text-2xl font-bold text-navy-foreground">
-            Bolão Copa 2026
+            Bolão Patropi Copa 2026
           </h1>
         </div>
-        <p className="text-sm text-navy-foreground/60">
-          Faça seus palpites e dispute com seus amigos
-        </p>
         <div className="mt-4 text-4xl">⚽🏆</div>
       </div>
 
