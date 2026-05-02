@@ -158,9 +158,9 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
       {/* Teams & Score/Prediction */}
       <div className="flex items-center justify-between gap-2 mb-3">
         {/* Home team */}
-        <div className="flex items-center gap-2 flex-1 min-w-0">
+        <div className="flex flex-col items-center gap-1 flex-1 min-w-0">
           <TeamFlag code={match.homeTeam.code} name={match.homeTeam.name} />
-          <div className="min-w-0">
+          <div className="min-w-0 text-center">
             <p className="text-sm font-semibold truncate">{match.homeTeam.name}</p>
             <p className="text-[11px] text-muted-foreground">{match.homeTeam.code}</p>
           </div>
