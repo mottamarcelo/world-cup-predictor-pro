@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppLayout } from "@/components/AppLayout";
-import { LeagueCard } from "@/components/LeagueCard";
+import { RankingTable } from "@/components/RankingTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,20 +13,39 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { UserPlus, Plus, Loader2 } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { UserPlus, Plus, Loader2, Users, Trophy, Copy } from "lucide-react";
 import { toast } from "sonner";
-import { useMyLeagues, useJoinLeague, useCreateLeague } from "@/hooks/useLeagues";
+import { useMyLeagues, useJoinLeague, useCreateLeague, useLeagueDetail } from "@/hooks/useLeagues";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function LeaguesPage() {
+  const { user } = useAuth();
   const [joinOpen, setJoinOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
   const [code, setCode] = useState("");
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const { data: leagues = [], isLoading } = useMyLeagues();
   const joinLeague = useJoinLeague();
   const createLeague = useCreateLeague();
+
+  useEffect(() => {
+    if (!selectedId && leagues.length > 0) setSelectedId(leagues[0].id);
+    if (selectedId && leagues.length > 0 && !leagues.find((l) => l.id === selectedId)) {
+      setSelectedId(leagues[0].id);
+    }
+  }, [leagues, selectedId]);
+
+  const { data: detail, isLoading: detailLoading } = useLeagueDetail(selectedId ?? undefined);
 
   const handleJoin = async () => {
     if (!code.trim()) return toast.error("Digite um código de convite");
@@ -48,6 +67,11 @@ export default function LeaguesPage() {
     } catch (e) {
       toast.error("Não foi possível criar a liga", { description: (e as Error).message });
     }
+  };
+
+  const copyInvite = (codeStr: string) => {
+    navigator.clipboard.writeText(codeStr);
+    toast.success(`Código ${codeStr} copiado!`);
   };
 
   return (
@@ -114,21 +138,65 @@ export default function LeaguesPage() {
           <p className="text-sm mt-1">Crie uma liga ou entre em uma existente usando o código de convite</p>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {leagues.map((league) => (
-            <LeagueCard
-              key={league.id}
-              league={{
-                id: league.id,
-                name: league.name,
-                participantCount: league.participantCount,
-                userPoints: league.userPoints,
-                userPosition: league.userPosition,
-                participants: [],
-              }}
-              inviteCode={league.invite_code}
-            />
-          ))}
+        <div className="space-y-4">
+          {leagues.length > 1 && (
+            <div className="flex items-center gap-2">
+              <Label className="text-sm text-muted-foreground shrink-0">Liga:</Label>
+              <Select value={selectedId ?? undefined} onValueChange={setSelectedId}>
+                <SelectTrigger className="w-full sm:w-72">
+                  <SelectValue placeholder="Selecione uma liga" />
+                </SelectTrigger>
+                <SelectContent>
+                  {leagues.map((l) => (
+                    <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          {detail && (
+            <div>
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold">{detail.league.name}</h2>
+                {detail.league.description && (
+                  <p className="text-sm text-muted-foreground mt-0.5">{detail.league.description}</p>
+                )}
+                <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground flex-wrap">
+                  <span className="flex items-center gap-1">
+                    <Users className="h-3.5 w-3.5" />{detail.participants.length} participantes
+                  </span>
+                  {(() => {
+                    const myPos = detail.participants.find((p) => p.userId === user?.id)?.position ?? 0;
+                    return myPos > 0 ? (
+                      <span className="flex items-center gap-1">
+                        <Trophy className="h-3.5 w-3.5 text-primary" />Sua posição: {myPos}º
+                      </span>
+                    ) : null;
+                  })()}
+                  <button
+                    onClick={() => copyInvite(detail.league.invite_code)}
+                    className="flex items-center gap-1 hover:text-foreground transition-colors"
+                    title="Copiar código de convite"
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                    <span className="font-mono tracking-wider">{detail.league.invite_code}</span>
+                  </button>
+                </div>
+              </div>
+              <RankingTable
+                participants={detail.participants}
+                currentUserId={user?.id ?? ""}
+                leagueId={detail.league.id}
+              />
+            </div>
+          )}
+
+          {detailLoading && !detail && (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            </div>
+          )}
         </div>
       )}
     </AppLayout>
