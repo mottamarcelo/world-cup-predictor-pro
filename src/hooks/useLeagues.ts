@@ -91,19 +91,24 @@ export function useMyLeagues() {
     queryFn: async (): Promise<LeagueWithStats[]> => {
       const { data: memberships, error } = await supabase
         .from("league_members")
-        .select("league_id")
-        .eq("user_id", user!.id);
+        .select("league_id, joined_at")
+        .eq("user_id", user!.id)
+        .order("joined_at", { ascending: true });
       if (error) throw error;
-      const ids = (memberships ?? []).map((m) => m.league_id);
+      const ordered = memberships ?? [];
+      const ids = ordered.map((m) => m.league_id);
       if (ids.length === 0) return [];
       const { data: leagues, error: lErr } = await supabase
         .from("leagues")
         .select("*")
         .in("id", ids);
       if (lErr) throw lErr;
+      const leaguesById = new Map(((leagues ?? []) as DbLeague[]).map((l) => [l.id, l]));
 
       const result: LeagueWithStats[] = [];
-      for (const lg of (leagues ?? []) as DbLeague[]) {
+      for (const m of ordered) {
+        const lg = leaguesById.get(m.league_id);
+        if (!lg) continue;
         const participants = await computeParticipants(lg.id);
         const me = participants.find((p) => p.userId === user!.id);
         result.push({
