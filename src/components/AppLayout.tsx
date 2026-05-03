@@ -119,7 +119,7 @@ export function AppLayout({ children }: AppLayoutProps) {
 
       <UserProfileDialog open={profileOpen} onOpenChange={setProfileOpen} />
 
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border sm:hidden">
+      <nav className="fixed bottom-4 left-3 right-3 z-50 bg-card border border-border rounded-2xl shadow-lg sm:hidden">
         <div className="flex items-center justify-around h-14">
           {navItems.map((item) => {
             const isActive =
@@ -141,7 +141,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         </div>
       </nav>
 
-      <main className="container py-6 pb-20 sm:pb-6">{children}</main>
+      <main className="container py-6 pb-28 sm:pb-6">{children}</main>
     </div>
   );
 }
