@@ -22,7 +22,7 @@ export function RankingTable({ participants, currentUserId, leagueId }: RankingT
     <TooltipProvider delayDuration={150}>
     <div className="bg-card rounded-xl border border-border overflow-hidden">
       {/* Header */}
-      <div className="grid grid-cols-[2.5rem_1fr_4.5rem_3.5rem_3.5rem] md:grid-cols-[3rem_1fr_5rem_4.5rem_4.5rem] gap-2 px-4 py-3 text-xs text-muted-foreground font-medium border-b border-border bg-muted/50">
+      <div className="grid grid-cols-[2rem_1fr_3rem_2.5rem_2.5rem] sm:grid-cols-[2.5rem_1fr_4.5rem_3.5rem_3.5rem] md:grid-cols-[3rem_1fr_5rem_4.5rem_4.5rem] gap-1.5 sm:gap-2 px-2 sm:px-4 py-3 text-xs text-muted-foreground font-medium border-b border-border bg-muted/50">
         <span>#</span>
         <span>Participante</span>
         <Tooltip>
@@ -33,7 +33,7 @@ export function RankingTable({ participants, currentUserId, leagueId }: RankingT
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <span className="text-center hidden sm:block cursor-help">
+            <span className="text-center cursor-help block">
               <Trophy className="h-3 w-3 mx-auto" />
             </span>
           </TooltipTrigger>
@@ -41,7 +41,7 @@ export function RankingTable({ participants, currentUserId, leagueId }: RankingT
         </Tooltip>
         <Tooltip>
           <TooltipTrigger asChild>
-            <span className="text-center hidden sm:block cursor-help">
+            <span className="text-center cursor-help block">
               <Target className="h-3 w-3 mx-auto" />
             </span>
           </TooltipTrigger>
@@ -57,7 +57,7 @@ export function RankingTable({ participants, currentUserId, leagueId }: RankingT
             key={p.userId}
             to={`/leagues/${leagueId}/participant/${p.userId}`}
             className={cn(
-              "grid grid-cols-[2.5rem_1fr_4.5rem_3.5rem_3.5rem] md:grid-cols-[3rem_1fr_5rem_4.5rem_4.5rem] gap-2 px-4 py-3 items-center transition-colors hover:bg-muted/50 border-b border-border last:border-b-0",
+              "grid grid-cols-[2rem_1fr_3rem_2.5rem_2.5rem] sm:grid-cols-[2.5rem_1fr_4.5rem_3.5rem_3.5rem] md:grid-cols-[3rem_1fr_5rem_4.5rem_4.5rem] gap-1.5 sm:gap-2 px-2 sm:px-4 py-3 items-center transition-colors hover:bg-muted/50 border-b border-border last:border-b-0",
               isCurrentUser && "bg-primary/5"
             )}
           >
@@ -72,8 +72,8 @@ export function RankingTable({ participants, currentUserId, leagueId }: RankingT
               </span>
             </div>
             <span className="text-sm font-bold text-center tabular-nums">{p.totalPoints}</span>
-            <span className="text-xs text-center tabular-nums hidden sm:block">{p.exactHits}</span>
-            <span className="text-xs text-center tabular-nums hidden sm:block">{p.winnerHits}</span>
+            <span className="text-xs text-center tabular-nums block">{p.exactHits}</span>
+            <span className="text-xs text-center tabular-nums block">{p.winnerHits}</span>
           </Link>
         );
       })}
