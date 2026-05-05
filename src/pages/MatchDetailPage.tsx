@@ -138,7 +138,7 @@ export default function MatchDetailPage() {
     );
   }
 
-  const { match, participants } = data;
+  const { match, participants, summary } = data;
 
   return (
     <AppLayout>
