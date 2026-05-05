@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import AuthPage from "./pages/AuthPage";
 import HomePage from "./pages/HomePage";
+import MatchDetailPage from "./pages/MatchDetailPage";
 import LeaguesPage from "./pages/LeaguesPage";
 import LeagueDetailPage from "./pages/LeagueDetailPage";
 import ParticipantDetailPage from "./pages/ParticipantDetailPage";
@@ -24,6 +25,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<RequireAuth><HomePage /></RequireAuth>} />
+            <Route path="/matches/:matchId" element={<RequireAuth><MatchDetailPage /></RequireAuth>} />
             <Route path="/auth" element={<AuthPage />} />
             <Route path="/leagues" element={<RequireAuth><LeaguesPage /></RequireAuth>} />
             <Route path="/leagues/:leagueId" element={<RequireAuth><LeagueDetailPage /></RequireAuth>} />
