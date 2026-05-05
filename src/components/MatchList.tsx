@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import { Link } from "react-router-dom";
 import { MatchWithPrediction } from "@/types";
 import { MatchCard } from "./MatchCard";
 import { Calendar } from "lucide-react";
@@ -101,16 +102,27 @@ export function MatchList({
           </div>
 
           <div className="flex flex-wrap justify-center gap-4 max-w-5xl mx-auto">
-            {group.matches.map((match) => (
-              <div key={match.id} className="w-full lg:w-[calc(50%-0.5rem)]">
+            {group.matches.map((match) => {
+              const card = (
                 <MatchCard
                   match={match}
                   editable={editable}
                   hidePrediction={hidePrediction}
                   onPredictionSave={onPredictionSave}
                 />
-              </div>
-            ))}
+              );
+              return (
+                <div key={match.id} className="w-full lg:w-[calc(50%-0.5rem)]">
+                  {match.status === "finished" ? (
+                    <Link to={`/matches/${match.id}`} className="block hover:opacity-90 transition-opacity">
+                      {card}
+                    </Link>
+                  ) : (
+                    card
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       ))}
