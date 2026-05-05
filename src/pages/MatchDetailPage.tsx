@@ -83,11 +83,35 @@ export default function MatchDetailPage() {
       });
 
       participants.sort((a, b) => {
-        if (b.points !== a.points) return b.points - a.points;
+        const aHas = a.homeScore !== null && a.awayScore !== null;
+        const bHas = b.homeScore !== null && b.awayScore !== null;
+        if (aHas !== bHas) return aHas ? -1 : 1;
+        if (aHas && bHas) {
+          if (b.homeScore! !== a.homeScore!) return b.homeScore! - a.homeScore!;
+          if (b.awayScore! !== a.awayScore!) return b.awayScore! - a.awayScore!;
+        }
         return a.name.localeCompare(b.name);
       });
 
-      return { match, participants };
+      // Summary stats: percentages of home win / draw / away win predictions
+      const withPred = participants.filter(
+        (p) => p.homeScore !== null && p.awayScore !== null
+      );
+      const total = withPred.length;
+      const homeWin = withPred.filter((p) => (p.homeScore as number) > (p.awayScore as number)).length;
+      const draw = withPred.filter((p) => (p.homeScore as number) === (p.awayScore as number)).length;
+      const awayWin = withPred.filter((p) => (p.homeScore as number) < (p.awayScore as number)).length;
+      const summary = {
+        total,
+        homeWinPct: total ? Math.round((homeWin / total) * 100) : 0,
+        drawPct: total ? Math.round((draw / total) * 100) : 0,
+        awayWinPct: total ? Math.round((awayWin / total) * 100) : 0,
+        homeWin,
+        draw,
+        awayWin,
+      };
+
+      return { match, participants, summary };
     },
   });
 
