@@ -83,11 +83,35 @@ export default function MatchDetailPage() {
       });
 
       participants.sort((a, b) => {
-        if (b.points !== a.points) return b.points - a.points;
+        const aHas = a.homeScore !== null && a.awayScore !== null;
+        const bHas = b.homeScore !== null && b.awayScore !== null;
+        if (aHas !== bHas) return aHas ? -1 : 1;
+        if (aHas && bHas) {
+          if (b.homeScore! !== a.homeScore!) return b.homeScore! - a.homeScore!;
+          if (b.awayScore! !== a.awayScore!) return b.awayScore! - a.awayScore!;
+        }
         return a.name.localeCompare(b.name);
       });
 
-      return { match, participants };
+      // Summary stats: percentages of home win / draw / away win predictions
+      const withPred = participants.filter(
+        (p) => p.homeScore !== null && p.awayScore !== null
+      );
+      const total = withPred.length;
+      const homeWin = withPred.filter((p) => (p.homeScore as number) > (p.awayScore as number)).length;
+      const draw = withPred.filter((p) => (p.homeScore as number) === (p.awayScore as number)).length;
+      const awayWin = withPred.filter((p) => (p.homeScore as number) < (p.awayScore as number)).length;
+      const summary = {
+        total,
+        homeWinPct: total ? Math.round((homeWin / total) * 100) : 0,
+        drawPct: total ? Math.round((draw / total) * 100) : 0,
+        awayWinPct: total ? Math.round((awayWin / total) * 100) : 0,
+        homeWin,
+        draw,
+        awayWin,
+      };
+
+      return { match, participants, summary };
     },
   });
 
@@ -114,7 +138,7 @@ export default function MatchDetailPage() {
     );
   }
 
-  const { match, participants } = data;
+  const { match, participants, summary } = data;
 
   return (
     <AppLayout>
@@ -172,6 +196,33 @@ export default function MatchDetailPage() {
           </div>
         )}
       </div>
+
+      {summary.total > 0 && (
+        <div className="match-card mb-4">
+          <h3 className="text-sm font-semibold mb-3">Resumo dos palpites</h3>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="rounded-md bg-muted/40 p-2">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">
+                {match.homeTeam.name}
+              </p>
+              <p className="text-lg font-bold tabular-nums">{summary.homeWinPct}%</p>
+              <p className="text-[10px] text-muted-foreground">{summary.homeWin} palpite(s)</p>
+            </div>
+            <div className="rounded-md bg-muted/40 p-2">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Empate</p>
+              <p className="text-lg font-bold tabular-nums">{summary.drawPct}%</p>
+              <p className="text-[10px] text-muted-foreground">{summary.draw} palpite(s)</p>
+            </div>
+            <div className="rounded-md bg-muted/40 p-2">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">
+                {match.awayTeam.name}
+              </p>
+              <p className="text-lg font-bold tabular-nums">{summary.awayWinPct}%</p>
+              <p className="text-[10px] text-muted-foreground">{summary.awayWin} palpite(s)</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <h2 className="text-base font-semibold mb-3">Palpites dos participantes</h2>
       {participants.length === 0 ? (
