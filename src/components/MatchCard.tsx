@@ -221,9 +221,17 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
         <span className="truncate">{match.venue}</span>
       </div>
 
-      {/* Score badge for finished matches */}
+      {/* Footer for finished matches */}
       {match.status === "finished" && (
-        <div className="border-t border-border pt-2 mt-2 flex justify-end">
+        <div className="border-t border-border pt-2 mt-2 flex justify-between items-center gap-2">
+          <Link
+            to={`/matches/${match.id}`}
+            onClick={(e) => e.stopPropagation()}
+            className="inline-flex items-center gap-1 px-2 h-7 rounded text-[11px] font-medium bg-muted text-foreground hover:bg-muted/80 transition-colors"
+          >
+            <Eye className="h-3 w-3" />
+            Visualizar palpites
+          </Link>
           <ScoreBadge scoreType={match.scoreType} points={match.points} />
         </div>
       )}
