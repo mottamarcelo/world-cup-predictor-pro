@@ -197,6 +197,33 @@ export default function MatchDetailPage() {
         )}
       </div>
 
+      {summary.total > 0 && (
+        <div className="match-card mb-4">
+          <h3 className="text-sm font-semibold mb-3">Resumo dos palpites</h3>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div className="rounded-md bg-muted/40 p-2">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">
+                {match.homeTeam.name}
+              </p>
+              <p className="text-lg font-bold tabular-nums">{summary.homeWinPct}%</p>
+              <p className="text-[10px] text-muted-foreground">{summary.homeWin} palpite(s)</p>
+            </div>
+            <div className="rounded-md bg-muted/40 p-2">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Empate</p>
+              <p className="text-lg font-bold tabular-nums">{summary.drawPct}%</p>
+              <p className="text-[10px] text-muted-foreground">{summary.draw} palpite(s)</p>
+            </div>
+            <div className="rounded-md bg-muted/40 p-2">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground truncate">
+                {match.awayTeam.name}
+              </p>
+              <p className="text-lg font-bold tabular-nums">{summary.awayWinPct}%</p>
+              <p className="text-[10px] text-muted-foreground">{summary.awayWin} palpite(s)</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <h2 className="text-base font-semibold mb-3">Palpites dos participantes</h2>
       {participants.length === 0 ? (
         <p className="text-sm text-muted-foreground">Nenhum participante.</p>
