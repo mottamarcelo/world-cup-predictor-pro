@@ -1,9 +1,10 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { MatchWithPrediction } from "@/types";
 import { StatusBadge } from "./StatusBadge";
 import { ScoreBadge } from "./ScoreBadge";
 import { TeamFlag } from "./TeamFlag";
-import { MapPin, Clock, Check, ChevronUp, ChevronDown } from "lucide-react";
+import { MapPin, Clock, Check, ChevronUp, ChevronDown, Eye } from "lucide-react";
 import { toast } from "sonner";
 
 interface MatchCardProps {
