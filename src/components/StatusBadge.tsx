@@ -10,12 +10,12 @@ export function StatusBadge({ status }: StatusBadgeProps) {
     <span
       className={cn(
         "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-        status === "finished"
-          ? "bg-muted text-muted-foreground"
-          : "bg-primary/10 text-primary font-semibold"
+        status === "finished" && "bg-muted text-muted-foreground",
+        status === "upcoming" && "bg-primary/10 text-primary font-semibold",
+        status === "live" && "bg-emerald-500/15 text-emerald-500 font-semibold"
       )}
     >
-      {status === "finished" ? "Finalizada" : "Em breve"}
+      {status === "finished" ? "Finalizada" : status === "live" ? "Em andamento" : "Em breve"}
     </span>
   );
 }

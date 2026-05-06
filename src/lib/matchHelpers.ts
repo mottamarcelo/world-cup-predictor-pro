@@ -30,8 +30,10 @@ function emoji(_code: string): string {
   return FLAG_FALLBACK[_code] ?? "";
 }
 
-function statusFromDb(s: string): MatchStatus {
-  return s === "finished" ? "finished" : "upcoming";
+function statusFromDb(s: string, kickoffAt: string): MatchStatus {
+  if (s === "finished") return "finished";
+  if (new Date(kickoffAt).getTime() <= Date.now()) return "live";
+  return "upcoming";
 }
 
 export function dbMatchToMatch(m: DbMatch): Match {
@@ -47,7 +49,7 @@ export function dbMatchToMatch(m: DbMatch): Match {
     time,
     kickoffAt: m.match_date,
     venue: m.venue ?? "",
-    status: statusFromDb(m.status),
+    status: statusFromDb(m.status, m.match_date),
     homeScore: m.home_score,
     awayScore: m.away_score,
     group: m.group_name ? `Grupo ${m.group_name}` : undefined,
@@ -55,7 +57,7 @@ export function dbMatchToMatch(m: DbMatch): Match {
 }
 
 export function computeScoreType(match: Match, pred: Prediction | null): ScoreType {
-  if (match.status === "upcoming") return "pending";
+  if (match.status !== "finished") return "pending";
   if (!pred || pred.homeScore === null || pred.awayScore === null) return "none";
   if (match.homeScore === pred.homeScore && match.awayScore === pred.awayScore) return "exact";
   const matchResult = Math.sign((match.homeScore ?? 0) - (match.awayScore ?? 0));
@@ -86,10 +88,12 @@ export function buildMatchesWithPredictions(
       return { ...match, prediction, scoreType, points: pointsFor(scoreType) };
     })
     .sort((a, b) => {
-      if (a.status === "upcoming" && b.status === "finished") return -1;
-      if (a.status === "finished" && b.status === "upcoming") return 1;
+      const aFinished = a.status === "finished";
+      const bFinished = b.status === "finished";
+      if (!aFinished && bFinished) return -1;
+      if (aFinished && !bFinished) return 1;
       const ad = new Date(`${a.date}T${a.time}:00`).getTime();
       const bd = new Date(`${b.date}T${b.time}:00`).getTime();
-      return a.status === "upcoming" ? ad - bd : bd - ad;
+      return !aFinished ? ad - bd : bd - ad;
     });
 }

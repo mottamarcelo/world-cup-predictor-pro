@@ -4,7 +4,7 @@ export interface Team {
   flag: string; // emoji flag
 }
 
-export type MatchStatus = "upcoming" | "finished";
+export type MatchStatus = "upcoming" | "live" | "finished";
 
 export interface Match {
   id: string;
