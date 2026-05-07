@@ -221,8 +221,8 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
         <span className="truncate">{match.venue}</span>
       </div>
 
-      {/* Footer for finished matches */}
-      {match.status === "finished" && (
+      {/* Footer for finished or live matches */}
+      {(match.status === "finished" || match.status === "live") && (
         <div className="border-t border-border pt-2 mt-2 flex justify-between items-center gap-2">
           <Link
             to={`/matches/${match.id}`}
@@ -232,7 +232,9 @@ export function MatchCard({ match, editable = false, hidePrediction = false, onP
             <Eye className="h-3 w-3" />
             Visualizar palpites
           </Link>
-          <ScoreBadge scoreType={match.scoreType} points={match.points} />
+          {match.status === "finished" && (
+            <ScoreBadge scoreType={match.scoreType} points={match.points} />
+          )}
         </div>
       )}
     </div>

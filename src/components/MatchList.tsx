@@ -113,7 +113,7 @@ export function MatchList({
               );
               return (
                 <div key={match.id} className="w-full lg:w-[calc(50%-0.5rem)]">
-                  {match.status === "finished" ? (
+                  {match.status !== "upcoming" ? (
                     <Link to={`/matches/${match.id}`} className="block hover:opacity-90 transition-opacity">
                       {card}
                     </Link>
