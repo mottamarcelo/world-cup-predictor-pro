@@ -222,8 +222,23 @@ export default function AdminPage() {
 
   const deleteMutation = useMutation({
     mutationFn: async (matchId: string) => {
+      const { count, error: countError } = await supabase
+        .from("predictions")
+        .select("id", { count: "exact", head: true })
+        .eq("match_id", matchId);
+      if (countError) throw countError;
+      if ((count ?? 0) > 0) {
+        throw new Error(
+          `Não é possível excluir: esta partida já possui ${count} palpite(s).`
+        );
+      }
       const { error } = await supabase.from("matches").delete().eq("id", matchId);
-      if (error) throw error;
+      if (error) {
+        if (error.code === "23503") {
+          throw new Error("Não é possível excluir: esta partida já possui palpites.");
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["adminMatches"] });
