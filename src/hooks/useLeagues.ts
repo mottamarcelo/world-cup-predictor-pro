@@ -170,30 +170,115 @@ export function useCreateLeague() {
   });
 }
 
-export function useJoinLeague() {
+export interface LeagueListItem extends DbLeague {
+  participantCount: number;
+  membershipStatus: "member" | "pending" | "none";
+}
+
+export function useAllLeagues() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["allLeagues", user?.id],
+    enabled: !!user,
+    queryFn: async (): Promise<LeagueListItem[]> => {
+      const [leaguesRes, membersRes, requestsRes] = await Promise.all([
+        supabase.from("leagues").select("*").order("name"),
+        supabase.from("league_members").select("league_id, user_id"),
+        supabase
+          .from("league_join_requests")
+          .select("league_id, status")
+          .eq("user_id", user!.id)
+          .eq("status", "pending"),
+      ]);
+      if (leaguesRes.error) throw leaguesRes.error;
+      if (membersRes.error) throw membersRes.error;
+      if (requestsRes.error) throw requestsRes.error;
+
+      const allLeagues = (leaguesRes.data ?? []) as DbLeague[];
+      const allMembers = membersRes.data ?? [];
+      const myPending = new Set((requestsRes.data ?? []).map((r) => r.league_id));
+
+      return allLeagues.map((lg) => {
+        const members = allMembers.filter((m) => m.league_id === lg.id);
+        const isMember = members.some((m) => m.user_id === user!.id);
+        const status: "member" | "pending" | "none" = isMember
+          ? "member"
+          : myPending.has(lg.id)
+          ? "pending"
+          : "none";
+        return { ...lg, participantCount: members.length, membershipStatus: status };
+      });
+    },
+  });
+}
+
+export function useRequestJoinLeague() {
   const { user } = useAuth();
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async (inviteCode: string) => {
+    mutationFn: async (leagueId: string) => {
       if (!user) throw new Error("Não autenticado");
-      const code = inviteCode.trim().toUpperCase();
-      const { data: league, error } = await supabase
-        .from("leagues")
-        .select("id, name")
-        .eq("invite_code", code)
-        .maybeSingle();
-      if (error) throw error;
-      if (!league) throw new Error("Código inválido");
-
-      const { error: insErr } = await supabase
-        .from("league_members")
-        .insert({ league_id: league.id, user_id: user.id });
-      if (insErr) {
-        if (insErr.code === "23505") throw new Error("Você já participa dessa liga");
-        throw insErr;
+      const { error } = await supabase
+        .from("league_join_requests")
+        .insert({ league_id: leagueId, user_id: user.id });
+      if (error) {
+        if (error.code === "23505") throw new Error("Você já tem uma solicitação pendente");
+        throw error;
       }
-      return league;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ["myLeagues"] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["allLeagues"] });
+      qc.invalidateQueries({ queryKey: ["pendingRequests"] });
+    },
+  });
+}
+
+export interface PendingRequest {
+  id: string;
+  league_id: string;
+  user_id: string;
+  created_at: string;
+  userName: string;
+}
+
+export function usePendingRequests(leagueId: string | undefined) {
+  return useQuery({
+    queryKey: ["pendingRequests", leagueId],
+    enabled: !!leagueId,
+    queryFn: async (): Promise<PendingRequest[]> => {
+      const { data: reqs, error } = await supabase
+        .from("league_join_requests")
+        .select("id, league_id, user_id, created_at")
+        .eq("league_id", leagueId!)
+        .eq("status", "pending")
+        .order("created_at", { ascending: true });
+      if (error) throw error;
+      const list = reqs ?? [];
+      if (list.length === 0) return [];
+      const ids = list.map((r) => r.user_id);
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, name")
+        .in("user_id", ids);
+      const nameById = new Map((profiles ?? []).map((p) => [p.user_id, p.name]));
+      return list.map((r) => ({ ...r, userName: nameById.get(r.user_id) ?? "Jogador" }));
+    },
+  });
+}
+
+export function useDecideRequest() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (input: { requestId: string; approve: boolean }) => {
+      const fn = input.approve ? "approve_join_request" : "reject_join_request";
+      const { error } = await supabase.rpc(fn, { _request_id: input.requestId });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["pendingRequests"] });
+      qc.invalidateQueries({ queryKey: ["allLeagues"] });
+      qc.invalidateQueries({ queryKey: ["myLeagues"] });
+      qc.invalidateQueries({ queryKey: ["leagueDetail"] });
+    },
   });
 }
