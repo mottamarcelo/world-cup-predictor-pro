@@ -181,9 +181,10 @@ export function useAllLeagues() {
     queryKey: ["allLeagues", user?.id],
     enabled: !!user,
     queryFn: async (): Promise<LeagueListItem[]> => {
-      const [leaguesRes, membersRes, requestsRes] = await Promise.all([
+      const [leaguesRes, myMembersRes, countsRes, requestsRes] = await Promise.all([
         supabase.from("leagues").select("*").order("name"),
-        supabase.from("league_members").select("league_id, user_id"),
+        supabase.from("league_members").select("league_id").eq("user_id", user!.id),
+        supabase.rpc("league_member_counts"),
         supabase
           .from("league_join_requests")
           .select("league_id, status")
@@ -191,22 +192,28 @@ export function useAllLeagues() {
           .eq("status", "pending"),
       ]);
       if (leaguesRes.error) throw leaguesRes.error;
-      if (membersRes.error) throw membersRes.error;
+      if (myMembersRes.error) throw myMembersRes.error;
+      if (countsRes.error) throw countsRes.error;
       if (requestsRes.error) throw requestsRes.error;
 
       const allLeagues = (leaguesRes.data ?? []) as DbLeague[];
-      const allMembers = membersRes.data ?? [];
+      const myLeagueIds = new Set((myMembersRes.data ?? []).map((m) => m.league_id));
+      const countsById = new Map(
+        ((countsRes.data ?? []) as { league_id: string; member_count: number }[]).map((c) => [
+          c.league_id,
+          Number(c.member_count),
+        ])
+      );
       const myPending = new Set((requestsRes.data ?? []).map((r) => r.league_id));
 
       return allLeagues.map((lg) => {
-        const members = allMembers.filter((m) => m.league_id === lg.id);
-        const isMember = members.some((m) => m.user_id === user!.id);
+        const isMember = myLeagueIds.has(lg.id);
         const status: "member" | "pending" | "none" = isMember
           ? "member"
           : myPending.has(lg.id)
           ? "pending"
           : "none";
-        return { ...lg, participantCount: members.length, membershipStatus: status };
+        return { ...lg, participantCount: countsById.get(lg.id) ?? 0, membershipStatus: status };
       });
     },
   });
