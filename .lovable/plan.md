@@ -1,50 +1,25 @@
 ## Objetivo
 
-Remover criação livre de ligas. Usuário passa a ver todas as ligas cadastradas e pode **solicitar acesso**. Donos da liga (ex.: dono da Patropi) aprovam ou rejeitam as solicitações.
+Os palpites de outros usuários devem ficar visíveis somente quando a janela para palpitar já tiver encerrado, ou seja, quando faltarem 5 minutos ou menos para o início da partida (mesma regra que já bloqueia inserir/editar palpites). Antes disso, cada usuário continua vendo apenas o próprio palpite.
 
-## Mudanças
+## Alteração
 
-### 1. Banco — nova tabela `league_join_requests`
+### Banco de dados (regra de acesso à tabela `predictions`)
 
-Campos: `league_id`, `user_id`, `status` ('pending' | 'approved' | 'rejected'), `created_at`, `decided_at`, `decided_by`.
+Substituir a regra atual "Authenticated see all predictions" (que libera tudo) por uma nova regra de leitura que permite ver palpites de outros usuários apenas se a partida estiver a 5 minutos ou menos do início (ou já tiver começado/terminado). O usuário continua sempre podendo ver os próprios palpites pela política já existente "Users see own predictions".
 
-Índice único parcial em `(league_id, user_id)` onde `status = 'pending'` para impedir solicitações duplicadas em aberto.
+Em SQL, a condição equivale a:
 
-RLS:
-- Usuário pode **inserir** solicitação para si mesmo (apenas se ainda não for membro e não tiver pendente).
-- Usuário **vê suas próprias** solicitações.
-- Dono da liga (`leagues.owner_id = auth.uid()`) **vê e atualiza** solicitações da sua liga.
+```text
+match_date <= now() + interval '5 minutes'
+```
 
-Função SECURITY DEFINER `approve_join_request(request_id uuid)`:
-- Valida que quem chama é dono da liga.
-- Insere em `league_members` (ignora se já existir) e marca a solicitação como `approved`.
+### Frontend
 
-Função `reject_join_request(request_id uuid)`: idem para rejeição.
+Nenhuma mudança. A página de detalhes da partida e os hooks já tentam buscar todos os palpites; o banco simplesmente devolverá apenas os que o usuário tem permissão de ver.
 
-### 2. Tela `/leagues` (`src/pages/LeaguesPage.tsx`)
+## Resultado
 
-- **Remover** botões "Criar liga" e "Entrar em liga".
-- **Adicionar** botão único: **"Visualizar Ligas"**, que abre um modal listando todas as ligas cadastradas (nome + descrição + nº de participantes).
-- Para cada liga na lista, mostrar status do usuário atual:
-  - **Membro** → badge "Você participa".
-  - **Pendente** → badge "Solicitação enviada" (desabilitado).
-  - **Não membro** → botão "Solicitar acesso".
-- Manter o restante da página (ranking da liga selecionada) como está.
-
-### 3. Painel do dono da liga
-
-Dentro da seção de detalhes da liga (visível apenas se `user.id === league.owner_id`), adicionar um card **"Solicitações pendentes"** listando cada solicitação com nome do usuário e botões **Aprovar** / **Rejeitar**.
-
-### 4. Hooks novos em `src/hooks/useLeagues.ts`
-
-- `useAllLeagues()` — lista todas as ligas + status do usuário (membro / pendente / nenhum).
-- `useRequestJoinLeague()` — insere solicitação.
-- `usePendingRequests(leagueId)` — lista solicitações pendentes (para o dono).
-- `useApproveRequest()` / `useRejectRequest()` — chamam as RPCs.
-
-Remover usos de `useCreateLeague` e `useJoinLeague` da UI (manter exportados ou apagar — decido apagar para limpar).
-
-## Observações
-
-- Ligas continuam podendo ser criadas via banco/admin se necessário; só a UI é bloqueada.
-- A política RLS atual de `leagues` já permite que qualquer autenticado liste ligas (`Anyone can lookup leagues to join`), então o modal funciona sem mudanças adicionais.
+- Partida "Em Breve" com mais de 5 min para começar: cada um vê só o próprio palpite.
+- Partida "Em Breve" a 5 min ou menos do início: todos os palpites ficam visíveis.
+- Partida em andamento ou finalizada: todos os palpites visíveis (sem mudança).
