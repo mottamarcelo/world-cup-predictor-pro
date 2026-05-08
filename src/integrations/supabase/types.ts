@@ -285,6 +285,13 @@ export type Database = {
         Args: { _league_id: string; _user_id: string }
         Returns: boolean
       }
+      league_member_counts: {
+        Args: never
+        Returns: {
+          league_id: string
+          member_count: number
+        }[]
+      }
       reject_join_request: { Args: { _request_id: string }; Returns: undefined }
     }
     Enums: {
